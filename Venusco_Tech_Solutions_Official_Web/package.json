@@ -1,0 +1,15 @@
+{
+  "name": "mdndn-life-os-site",
+  "version": "1.0.0",
+  "description": "Build tools for the MDNDN Life OS static website",
+  "main": "scripts/generate-sitemap.js",
+  "scripts": {
+    "generate-sitemap": "node scripts/generate-sitemap.js",
+    "build": "node scripts/build-assets.js"
+  },
+  "author": "VenusCo",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  }
+}

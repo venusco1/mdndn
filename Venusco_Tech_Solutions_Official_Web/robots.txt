@@ -1,0 +1,6 @@
+User-agent: *
+Disallow:
+Sitemap: https://venusco.in/sitemap.xml
+
+# Crawl-delay can be added if your server needs it (not all crawlers support it)
+# Crawl-delay: 10

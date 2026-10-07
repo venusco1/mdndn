@@ -1,568 +1,635 @@
 (() => {
+  const STORAGE_KEY = 'mdndn-life-os-v1';
   const DOB = new Date(1999, 6, 18);
   const AGE30 = new Date(2029, 6, 18);
   const AGE60 = new Date(2059, 6, 18);
-  const HORIZON_DAYS = daysBetween(new Date(1999, 6, 18), new Date(2059, 6, 18));
+  const VIEWS = ['today', 'goals', 'tasks', 'habits', 'progress', 'life', 'journal', 'archive'];
   const PILLARS = [
-    { id: "mental", name: "Mental & Intelligence", action: "30 min learning" },
-    { id: "physical", name: "Physical", action: "Exercise" },
-    { id: "spiritual", name: "Islamic & Spiritual", action: "Salah / Qur'an" },
-    { id: "financial", name: "Financial", action: "Record expenses" },
-    { id: "personal", name: "Personal Development", action: "Reading / skill" },
-    { id: "character", name: "Character & Discipline", action: "Discipline / emotional control" },
-    { id: "business", name: "Business & Professional", action: "Revenue-producing work" }
+    { id: 'mental', name: 'Mental & Intelligence', tag: 'learning' },
+    { id: 'physical', name: 'Physical', tag: 'health' },
+    { id: 'spiritual', name: 'Islamic & Spiritual', tag: 'faith' },
+    { id: 'financial', name: 'Financial', tag: 'money' },
+    { id: 'personal', name: 'Personal Development', tag: 'growth' },
+    { id: 'character', name: 'Character & Discipline', tag: 'discipline' },
+    { id: 'business', name: 'Business & Professional', tag: 'career' },
   ];
 
-  const $ = (sel, root = document) => root.querySelector(sel);
-  const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
+  const defaultState = {
+    currentView: 'today',
+    theme: 'system',
+    big3: ['Complete client website', 'Follow up with 50 leads', 'Exercise for 30 minutes'],
+    scores: {
+      mental: 2,
+      physical: 1,
+      spiritual: 2,
+      financial: 1,
+      personal: 2,
+      character: 1,
+      business: 2,
+    },
+    tasks: [
+      { id: 'task-1', title: 'Book the next client call', description: 'Prepare offer and follow-up notes', status: 'todo', priority: 'high', dueDate: '', pillar: 'business', createdAt: nowISO() },
+      { id: 'task-2', title: 'Review monthly finances', description: 'Check revenue, expenses, and savings', status: 'in_progress', priority: 'medium', dueDate: '', pillar: 'financial', createdAt: nowISO() },
+      { id: 'task-3', title: 'Read 20 pages', description: 'Focused learning and reflection', status: 'completed', priority: 'low', dueDate: '', pillar: 'mental', createdAt: nowISO() },
+    ],
+    goals: [
+      { id: 'goal-1', title: 'Reach ₹50,000 monthly personal income', description: 'Create stable personal income through business systems.', category: 'age-30', pillar: 'financial', target: 50000, current: 22000, unit: '₹', status: 'on-track', deadline: '2029-07-18' },
+      { id: 'goal-2', title: 'Build a strong wellness base', description: 'Strengthen sleep, exercise, and daily discipline.', category: 'yearly', pillar: 'physical', target: 100, current: 74, unit: '%', status: 'on-track', deadline: '2027-12-31' },
+      { id: 'goal-3', title: 'Complete core Islamic rhythm', description: 'Daily Salah and Qur’an routine with consistency.', category: 'short-term', pillar: 'spiritual', target: 100, current: 82, unit: '%', status: 'needs-focus', deadline: '2026-12-31' },
+    ],
+    habits: [
+      { id: 'habit-1', title: 'Exercise', bestStreak: 8, history: [3, 2, 1, 0].map((days) => isoDate(subDays(new Date(), days))) },
+      { id: 'habit-2', title: 'Qur’an', bestStreak: 12, history: [5, 4, 3, 2, 1, 0].map((days) => isoDate(subDays(new Date(), days))) },
+      { id: 'habit-3', title: 'Reading', bestStreak: 7, history: [2, 1, 0].map((days) => isoDate(subDays(new Date(), days))) },
+      { id: 'habit-4', title: 'Plan the day', bestStreak: 5, history: [1, 0].map((days) => isoDate(subDays(new Date(), days))) },
+      { id: 'habit-5', title: 'Sleep on time', bestStreak: 9, history: [4, 3, 2, 1, 0].map((days) => isoDate(subDays(new Date(), days))) },
+    ],
+    journal: [
+      { id: 'jour-1', date: isoDate(subDays(new Date(), 1)), mood: 'focused', text: 'Focused work on client work and reduced the clutter in my task list. The day felt calm and productive.' },
+      { id: 'jour-2', date: isoDate(subDays(new Date(), 3)), mood: 'strong', text: 'I kept my rhythm better today. My biggest win was consistent follow-up and a stronger pattern of daily execution.' },
+    ],
+    history: [
+      { date: isoDate(subDays(new Date(), 6)), scores: { mental: 2, physical: 1, spiritual: 2, financial: 1, personal: 2, character: 2, business: 2 } },
+      { date: isoDate(subDays(new Date(), 5)), scores: { mental: 1, physical: 1, spiritual: 2, financial: 0, personal: 1, character: 2, business: 2 } },
+      { date: isoDate(subDays(new Date(), 4)), scores: { mental: 2, physical: 0, spiritual: 2, financial: 1, personal: 2, character: 1, business: 2 } },
+      { date: isoDate(subDays(new Date(), 3)), scores: { mental: 2, physical: 1, spiritual: 2, financial: 2, personal: 1, character: 2, business: 1 } },
+      { date: isoDate(subDays(new Date(), 2)), scores: { mental: 2, physical: 2, spiritual: 2, financial: 1, personal: 2, character: 2, business: 2 } },
+      { date: isoDate(subDays(new Date(), 1)), scores: { mental: 2, physical: 1, spiritual: 2, financial: 1, personal: 2, character: 2, business: 2 } },
+      { date: isoDate(new Date()), scores: { mental: 2, physical: 1, spiritual: 2, financial: 1, personal: 2, character: 1, business: 2 } },
+    ],
+    archive: [
+      { id: 'arch-1', type: 'achievement', title: 'Reached first client milestone', date: '2026-09-20', text: 'Delivered a premium website and closed the project on time.' },
+      { id: 'arch-2', type: 'review', title: 'Weekly review', date: '2026-09-18', text: 'Focused on improving follow-through and reducing task switching.' },
+    ],
+  };
 
-  function startOfDay(d) {
-    return new Date(d.getFullYear(), d.getMonth(), d.getDate());
-  }
-
-  function daysBetween(a, b) {
-    const ms = startOfDay(b) - startOfDay(a);
-    return Math.round(ms / 86400000);
-  }
-
-  function ymdBetween(from, to) {
-    let years = to.getFullYear() - from.getFullYear();
-    let months = to.getMonth() - from.getMonth();
-    let days = to.getDate() - from.getDate();
-    if (days < 0) {
-      months -= 1;
-      days += new Date(to.getFullYear(), to.getMonth(), 0).getDate();
+  function nowISO() { return isoDate(new Date()); }
+  function startOfDay(date) { return new Date(date.getFullYear(), date.getMonth(), date.getDate()); }
+  function subDays(date, days) { const next = new Date(date); next.setDate(next.getDate() - days); return next; }
+  function pad(value) { return String(value).padStart(2, '0'); }
+  function isoDate(date) { return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`; }
+  function isISODate(value) { if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false; const date = new Date(`${value}T00:00:00`); return !Number.isNaN(date.getTime()) && isoDate(date) === value; }
+  function daysBetween(start, end) { return Math.round((startOfDay(end) - startOfDay(start)) / 86400000); }
+  function ymdBetween(start, end) { let years = end.getFullYear() - start.getFullYear(); let months = end.getMonth() - start.getMonth(); let days = end.getDate() - start.getDate(); if (days < 0) { months -= 1; days += new Date(end.getFullYear(), end.getMonth(), 0).getDate(); } if (months < 0) { years -= 1; months += 12; } return { years, months, days }; }
+  function formatAge(value) { return `${value.years} years, ${value.months} months, ${value.days} days`; }
+  function getAgeNow() { return ymdBetween(DOB, new Date()); }
+  function getLifeStats() { const now = new Date(); const age = ymdBetween(DOB, now); const yearsLived = daysBetween(DOB, now); const to30 = Math.max(0, daysBetween(now, AGE30)); const to60 = Math.max(0, daysBetween(now, AGE60)); const age30Progress = Math.min(100, Math.max(0, (yearsLived / daysBetween(DOB, AGE30)) * 100)); const age60Progress = Math.min(100, Math.max(0, (yearsLived / daysBetween(DOB, AGE60)) * 100)); return { age, yearsLived, to30, to60, age30Progress, age60Progress }; }
+  function dailyScore(scores) { const total = PILLARS.reduce((sum, pillar) => sum + (Number(scores[pillar.id]) || 0), 0); return { total, pct: (total / 14) * 100 }; }
+  function isRecord(value) { return value !== null && typeof value === 'object' && !Array.isArray(value); }
+  function normalizeState(value) {
+    if (!isRecord(value)) throw new Error('The saved data must be a JSON object.');
+    const state = { ...structuredClone(defaultState), ...value };
+    for (const key of ['tasks', 'goals', 'habits', 'journal', 'history', 'archive', 'big3']) {
+      if (value[key] !== undefined && !Array.isArray(value[key])) throw new Error(`The "${key}" field must be a list.`);
     }
-    if (months < 0) {
-      years -= 1;
-      months += 12;
-    }
-    return { years, months, days };
+    if (value.scores !== undefined && !isRecord(value.scores)) throw new Error('The "scores" field must be an object.');
+    state.currentView = VIEWS.includes(value.currentView) ? value.currentView : 'today';
+    state.theme = ['system', 'light', 'dark'].includes(value.theme) ? value.theme : 'system';
+    state.big3 = (value.big3 || defaultState.big3).slice(0, 3).map((item) => String(item).slice(0, 200));
+    while (state.big3.length < 3) state.big3.push('');
+    state.scores = Object.fromEntries(PILLARS.map(({ id }) => [id, Math.max(0, Math.min(2, Math.round(Number(value.scores?.[id] ?? defaultState.scores[id]) || 0)))]));
+    state.tasks = (value.tasks || defaultState.tasks).map((item, index) => {
+      if (!isRecord(item)) throw new Error('Each task in the saved data must be an object.');
+      return { ...item, id: String(item.id || `task-${index}`), title: String(item.title || ''), description: String(item.description || ''), status: ['todo', 'in_progress', 'completed'].includes(item.status) ? item.status : 'todo', priority: ['low', 'medium', 'high'].includes(item.priority) ? item.priority : 'medium', dueDate: String(item.dueDate || ''), pillar: String(item.pillar || 'business') };
+    });
+    state.goals = (value.goals || defaultState.goals).map((item, index) => {
+      if (!isRecord(item)) throw new Error('Each goal in the saved data must be an object.');
+      return { ...item, id: String(item.id || `goal-${index}`), title: String(item.title || ''), description: String(item.description || ''), category: String(item.category || 'short-term'), pillar: String(item.pillar || 'personal'), target: Math.max(0, Number(item.target) || 0), current: Math.max(0, Number(item.current) || 0), unit: String(item.unit || ''), status: String(item.status || 'on-track'), deadline: String(item.deadline || '') };
+    });
+    state.habits = (value.habits || defaultState.habits).map((item, index) => {
+      if (!isRecord(item)) throw new Error('Each habit in the saved data must be an object.');
+      return { ...item, id: String(item.id || `habit-${index}`), title: String(item.title || ''), history: Array.isArray(item.history) ? [...new Set(item.history.filter(isISODate))].sort() : [] };
+    });
+    state.journal = (value.journal || defaultState.journal).map((item, index) => {
+      if (!isRecord(item)) throw new Error('Each journal entry in the saved data must be an object.');
+      return { ...item, id: String(item.id || `journal-${index}`), date: String(item.date || nowISO()), mood: String(item.mood || 'focused'), text: String(item.text || '') };
+    });
+    state.history = (value.history || defaultState.history).map((item) => {
+      if (!isRecord(item) || !isRecord(item.scores)) throw new Error('Each progress record must contain a score object.');
+      if (!isISODate(item.date)) throw new Error('Each progress record must have a valid date.');
+      return { date: String(item.date || nowISO()), scores: Object.fromEntries(PILLARS.map(({ id }) => [id, Math.max(0, Math.min(2, Math.round(Number(item.scores[id]) || 0)))])) };
+    });
+    state.archive = (value.archive || defaultState.archive).map((item, index) => {
+      if (!isRecord(item)) throw new Error('Each archive entry in the saved data must be an object.');
+      return { ...item, id: String(item.id || `archive-${index}`), type: String(item.type || 'achievement'), title: String(item.title || ''), date: String(item.date || nowISO()), text: String(item.text || '') };
+    });
+    return state;
   }
-
-  function fmtYMD({ years, months, days }) {
-    return `${years} years, ${months} months, ${days} days`;
-  }
-
-  function pad(n) {
-    return String(n).padStart(2, "0");
-  }
-
-  function isoDate(d) {
-    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-  }
-
-  function isoWeekKey(d) {
-    const date = startOfDay(d);
-    date.setDate(date.getDate() + 4 - (date.getDay() || 7));
-    const yearStart = new Date(date.getFullYear(), 0, 1);
-    const week = Math.ceil(((date - yearStart) / 86400000 + 1) / 7);
-    return `${date.getFullYear()}-W${pad(week)}`;
-  }
-
-  function monthKey(d) {
-    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}`;
-  }
-
-  function setStatus(message, isError = false, target = "app-status") {
-    const el = document.getElementById(target);
-    if (!el) return;
-    el.textContent = message;
-    el.classList.toggle("is-error", isError);
-  }
-
-  function load(key, fallback) {
+  function loadState() {
     try {
-      const raw = localStorage.getItem(key);
-      return raw ? JSON.parse(raw) : fallback;
+      const raw = localStorage.getItem(STORAGE_KEY);
+      return raw ? normalizeState(JSON.parse(raw)) : normalizeState(defaultState);
     } catch (error) {
-      console.error(`Unable to read saved diary data for "${key}".`, error);
-      setStatus("Saved data could not be read. Export or repair your diary backup, then reload.", true);
-      return fallback;
+      console.error('Unable to load local state.', error);
+      announce('Saved data could not be loaded. The app is showing the default data instead.');
+      return structuredClone(defaultState);
     }
   }
-
-  function save(key, value) {
+  function saveState(state) {
     try {
-      localStorage.setItem(key, JSON.stringify(value));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
       return true;
     } catch (error) {
-      console.error(`Unable to save diary data for "${key}".`, error);
-      setStatus("Changes could not be saved in this browser. Export your data or free browser storage.", true);
+      console.error('Unable to save local state.', error);
+      announce('Your browser could not save this change. Check available storage and try again.');
       return false;
     }
   }
-
-  function currentStage(now) {
-    const t = startOfDay(now).getTime();
-    if (t <= new Date(2026, 11, 31).getTime()) return 1;
-    if (t <= new Date(2027, 11, 31).getTime()) return 2;
-    if (t <= new Date(2028, 11, 31).getTime()) return 3;
-    return 4;
+  function announce(message) {
+    document.querySelector('.toast')?.remove();
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.setAttribute('role', 'status');
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    window.setTimeout(() => toast.remove(), 5000);
   }
-
-  function renderClock() {
-    const now = new Date();
-    const lived = Math.max(0, daysBetween(DOB, now));
-    const to30 = Math.max(0, daysBetween(now, AGE30));
-    const to60 = Math.max(0, daysBetween(now, AGE60));
-    const age = now < DOB ? { years: 0, months: 0, days: 0 } : ymdBetween(DOB, now);
-    const remain60 = to60 ? ymdBetween(now, AGE60) : { years: 0, months: 0, days: 0 };
-    const remain30 = to30 ? ymdBetween(now, AGE30) : { years: 0, months: 0, days: 0 };
-    const pct60 = Math.max(0, Math.min(100, (lived / HORIZON_DAYS) * 100));
-    const weeksLived = Math.floor(lived / 7);
-    const weekRemLived = lived % 7;
-    const monthsLivedApprox = age.years * 12 + age.months;
-    const weeks30 = Math.floor(to30 / 7);
-    const weekRem30 = to30 % 7;
-    const months30 = remain30.years * 12 + remain30.months;
-    const weeks60 = Math.floor(to60 / 7);
-    const weekRem60 = to60 % 7;
-    const months60 = remain60.years * 12 + remain60.months;
-
-    const setText = (id, val) => {
-      const el = document.getElementById(id);
-      if (el) el.textContent = val;
-    };
-
-    setText("live-now", now.toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" }));
-    setText("live-age", fmtYMD(age));
-    setText("live-to30", to30 ? `${to30.toLocaleString()} days` : "Milestone reached");
-    setText("current-age", String(age.years));
-    setText("clock-today", now.toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" }));
-    setText("clock-age", fmtYMD(age));
-    setText("clock-days-lived", lived.toLocaleString());
-    setText("clock-weeks-lived", `${weeksLived.toLocaleString()} weeks + ${weekRemLived} days`);
-    setText("clock-months-lived", `${monthsLivedApprox} months + ${age.days} days`);
-    setText("clock-years-lived", String(age.years));
-    setText("clock-pct", `${pct60.toFixed(1)}%`);
-    setText("clock-remain-ymd", fmtYMD(remain60));
-    setText("clock-remain-days", to60.toLocaleString());
-    setText("clock-remain-weeks", `${weeks60.toLocaleString()} weeks + ${weekRem60} days`);
-    setText("clock-remain-months", `${months60} months + ${remain60.days} days`);
-    setText("deadline-ymd", fmtYMD(remain30));
-    setText("deadline-years", String(remain30.years));
-    setText("deadline-days", to30.toLocaleString());
-    setText("deadline-total-days", to30.toLocaleString());
-    setText("deadline-weeks", `${weeks30} weeks + ${weekRem30} days`);
-    setText("deadline-months", `${months30} months + ${remain30.days} days`);
-    setText("daily-date", isoDate(now));
-    setText("daily-age", fmtYMD(age));
-    setText("daily-lived", lived.toLocaleString());
-    setText("daily-to30", to30.toLocaleString());
-    setText("daily-to60", to60.toLocaleString());
-    setText("sidebar-days", to30.toLocaleString());
-    setText("clock-days-to-30", to30.toLocaleString());
-    setText("mission-days", to30 ? to30.toLocaleString() : "Milestone reached");
-    setText("deadline-window", `${isoDate(new Date(2026, 9, 6))} – ${isoDate(AGE30)}`);
-
-    const ring = document.getElementById("life-ring");
-    if (ring) ring.style.setProperty("--p", pct60.toFixed(1));
-    const windowStart = new Date(2026, 9, 6);
-    const windowTotal = Math.max(1, daysBetween(windowStart, AGE30));
-    const windowElapsed = Math.max(0, daysBetween(windowStart, now));
-    const missionPct = Math.max(0, Math.min(100, (windowElapsed / windowTotal) * 100));
-    const bar = document.getElementById("sidebar-bar");
-    if (bar) bar.style.width = `${missionPct}%`;
-    if (bar) bar.parentElement.setAttribute("aria-valuenow", String(Math.round(missionPct)));
-    if (ring) ring.setAttribute("aria-label", `${pct60.toFixed(1)} percent of the 60-year life horizon completed`);
-
-    $$(".stage").forEach((el) => {
-      el.classList.toggle("active", Number(el.dataset.stage) === currentStage(now));
-    });
+  function recordTodayScore(state) {
+    const today = nowISO();
+    const record = state.history.find((item) => item.date === today);
+    if (record) record.scores = { ...state.scores };
+    else state.history.push({ date: today, scores: { ...state.scores } });
   }
-
-  function dailyKey(dateStr) {
-    return `mdndn.daily.${dateStr}`;
-  }
-
-  function defaultDaily(dateStr) {
-    return {
-      date: dateStr,
-      big3: ["", "", ""],
-      actions: Object.fromEntries(PILLARS.map((p) => [p.id, { note: p.action, done: false }])),
-      scores: Object.fromEntries(PILLARS.map((p) => [p.id, null]))
-    };
-  }
-
-  function normalizeDaily(dateStr, stored) {
-    const daily = defaultDaily(dateStr);
-    if (!stored || typeof stored !== "object" || Array.isArray(stored)) return daily;
-    if (Array.isArray(stored.big3)) {
-      daily.big3 = daily.big3.map((value, index) =>
-        typeof stored.big3[index] === "string" ? stored.big3[index] : value
-      );
+  function getHabitStreaks(history) {
+    const dates = [...new Set(history)].sort();
+    const completed = new Set(dates);
+    let cursor = startOfDay(new Date());
+    if (!completed.has(isoDate(cursor))) cursor = subDays(cursor, 1);
+    let currentStreak = 0;
+    while (completed.has(isoDate(cursor))) {
+      currentStreak += 1;
+      cursor = subDays(cursor, 1);
     }
-    PILLARS.forEach((pillar) => {
-      const action = stored.actions?.[pillar.id];
-      if (action && typeof action === "object") {
-        daily.actions[pillar.id] = {
-          note: typeof action.note === "string" ? action.note : pillar.action,
-          done: action.done === true
-        };
-      }
-      const score = stored.scores?.[pillar.id];
-      daily.scores[pillar.id] = [0, 1, 2].includes(score) ? score : null;
+    let bestStreak = 0;
+    let streak = 0;
+    let previous;
+    dates.forEach((date) => {
+      const current = new Date(`${date}T00:00:00`);
+      streak = previous && daysBetween(previous, current) === 1 ? streak + 1 : 1;
+      bestStreak = Math.max(bestStreak, streak);
+      previous = current;
     });
-    return daily;
+    return { currentStreak, bestStreak };
+  }
+  function greeting() { const hour = new Date().getHours(); if (hour < 12) return 'Good morning'; if (hour < 17) return 'Good afternoon'; return 'Good evening'; }
+  function formatCurrency(value) { const amount = Number(value) || 0; return `₹${amount.toLocaleString('en-IN')}`; }
+  function formatGoalValue(goal, value) { return goal.unit === '₹' ? formatCurrency(value) : `${Number(value).toLocaleString()}${goal.unit ? ` ${goal.unit}` : ''}`; }
+  function escapeHtml(value) { return String(value).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;'); }
+
+  function renderToday(state, life, daily, age) {
+    return `
+      <div class="section-header">
+        <h2>Today</h2>
+        <div class="pills">
+          <span class="badge">Age ${age.years}</span>
+          <span class="badge">${life.to30.toLocaleString()} days to 30</span>
+        </div>
+      </div>
+      <div class="grid grid-4">
+        <div class="card metric"><span class="label">Daily score</span><strong>${daily.total}/14</strong><span class="small muted">${daily.pct.toFixed(1)}%</span></div>
+        <div class="card metric"><span class="label">Age</span><strong>${age.years}</strong><span class="small muted">${formatAge(age)}</span></div>
+        <div class="card metric"><span class="label">Days lived</span><strong>${life.yearsLived.toLocaleString()}</strong><span class="small muted">${Math.max(0, Math.min(100, life.age30Progress)).toFixed(1)}% to age 30</span></div>
+        <div class="card metric"><span class="label">Age 60</span><strong>${life.to60.toLocaleString()}</strong><span class="small muted">${life.age60Progress.toFixed(1)}% of life horizon</span></div>
+      </div>
+      <div class="grid grid-2" style="margin-top: 18px;">
+        <div class="card">
+          <div class="section-header"><h3>Today's Big 3</h3></div>
+          <form id="big3-form">
+            ${state.big3.map((item, index) => `<label><span>Priority ${index + 1}</span><input type="text" name="big${index}" value="${escapeHtml(item)}" /></label>`).join('')}
+            <button type="submit" class="primary-btn">Save priorities</button>
+          </form>
+        </div>
+        <div class="card">
+          <div class="section-header"><h3>Daily performance</h3><span class="badge">Max 14</span></div>
+          <div class="pillars">
+            ${PILLARS.map((pillar) => `
+              <div class="score-row">
+                <div>${pillar.name}</div>
+                <div class="score-controls" data-pillar="${pillar.id}">
+                  <button type="button" data-score="0" class="${Number(state.scores[pillar.id]) === 0 ? 'active' : ''}" aria-label="Not done for ${pillar.name}">❌</button>
+                  <button type="button" data-score="1" class="${Number(state.scores[pillar.id]) === 1 ? 'active' : ''}" aria-label="Partial for ${pillar.name}">🟡</button>
+                  <button type="button" data-score="2" class="${Number(state.scores[pillar.id]) === 2 ? 'active' : ''}" aria-label="Completed for ${pillar.name}">✅</button>
+                </div>
+                <strong>${Number(state.scores[pillar.id]) || 0}</strong>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      </div>
+      <div class="grid grid-2" style="margin-top: 18px;">
+        <div class="card">
+          <div class="section-header"><h3>Top tasks</h3><button type="button" class="chip-btn" data-action="nav" data-view="tasks">View all</button></div>
+          <div class="task-list">${state.tasks.filter((task) => task.status !== 'completed').slice(0, 4).map(taskItemCard).join('') || '<p class="muted">No active tasks right now.</p>'}</div>
+        </div>
+        <div class="card">
+          <div class="section-header"><h3>Habit rhythm</h3><button type="button" class="chip-btn" data-action="nav" data-view="habits">Track</button></div>
+          <div class="habit-list">${state.habits.slice(0, 4).map((habit) => {
+            const streaks = getHabitStreaks(habit.history);
+            const done = habit.history.includes(nowISO());
+            return `<div class="habit-item"><div><strong>${escapeHtml(habit.title)}</strong><div class="small muted">Streak ${streaks.currentStreak} • Best ${Math.max(Number(habit.bestStreak) || 0, streaks.bestStreak)}</div></div><button type="button" class="${done ? 'done' : ''}" data-action="toggle-habit" data-id="${escapeHtml(habit.id)}">${done ? 'Done' : 'Mark done'}</button></div>`;
+          }).join('') || '<p class="empty-state">No habits yet. Add one to start your daily rhythm.</p>'}</div>
+        </div>
+      </div>
+    `;
   }
 
-  function renderDaily() {
-    const dateStr = isoDate(new Date());
-    const data = normalizeDaily(dateStr, load(dailyKey(dateStr), defaultDaily(dateStr)));
+  function renderGoals(state) {
+    return `
+      <div class="section-header"><h2>Goals</h2></div>
+      <div class="card">
+        <h3>Create a goal</h3>
+        <form id="goal-form" class="goal-form">
+          <label>Goal name<input type="text" name="title" maxlength="160" placeholder="What are you working toward?" required /></label>
+          <label>Category<select name="category"><option value="short-term">Short-term</option><option value="yearly">Yearly</option><option value="age-30">Age 30</option><option value="long-term">Long-term</option></select></label>
+          <label>Pillar<select name="pillar">${PILLARS.map((pillar) => `<option value="${pillar.id}">${pillar.name}</option>`).join('')}</select></label>
+          <label>Progress unit<input type="text" name="unit" maxlength="20" placeholder="%, ₹, books..." /></label>
+          <label>Current progress<input type="number" name="current" min="0" step="any" value="0" /></label>
+          <label>Target<input type="number" name="target" min="0.01" step="any" required /></label>
+          <label>Deadline<input type="date" name="deadline" /></label>
+          <label>Description<input type="text" name="description" maxlength="300" placeholder="Optional context" /></label>
+          <button type="submit" class="primary-btn">Save goal</button>
+        </form>
+      </div>
+      <div class="goal-list">
+        ${state.goals.map((goal) => {
+          const progress = Math.min(100, Math.max(0, ((Number(goal.current) || 0) / Math.max(1, Number(goal.target) || 1)) * 100));
+          return `
+            <div class="goal-card">
+              <div class="section-header" style="margin-bottom: 6px;"><h3>${escapeHtml(goal.title)}</h3><span class="badge">${escapeHtml(goal.category)}</span></div>
+              ${goal.description ? `<p class="muted">${escapeHtml(goal.description)}</p>` : ''}
+              <div class="task-meta"><span class="tag">${escapeHtml(goal.pillar)}</span><span class="tag">Deadline ${escapeHtml(goal.deadline || 'TBD')}</span><span class="tag">${escapeHtml(goal.status)}</span></div>
+              <div class="goal-progress"><span style="width:${progress}%"></span></div>
+              <form class="goal-progress-form" data-id="${escapeHtml(goal.id)}" style="grid-template-columns: minmax(0, 1fr) auto; align-items: end; margin-top: 10px;">
+                <label>Progress (${escapeHtml(goal.unit || 'units')})<input type="number" name="current" min="0" step="any" value="${escapeHtml(goal.current)}" /></label>
+                <div class="pills"><span class="small muted">${escapeHtml(formatGoalValue(goal, goal.current))} / ${escapeHtml(formatGoalValue(goal, goal.target))} • ${progress.toFixed(0)}%</span><button type="submit" class="chip-btn">Update</button><button type="button" class="danger-btn" data-action="delete-goal" data-id="${escapeHtml(goal.id)}">Delete</button></div>
+              </form>
+            </div>
+          `;
+        }).join('') || '<p class="empty-state">No goals yet. Create your first goal above.</p>'}
+      </div>
+    `;
+  }
 
-    ["big1", "big2", "big3"].forEach((id, i) => {
-      const el = document.getElementById(id);
-      if (el) el.value = data.big3[i] || "";
-    });
+  function renderTasks(state) {
+    return `
+      <div class="section-header"><h2>Tasks</h2><button type="button" class="primary-btn" data-action="quick-add" data-type="task">Add task</button></div>
+      <div class="card"><form id="task-form" class="inline-form"><label><span>Task</span><input type="text" name="title" placeholder="Task name" required /></label><label><span>Priority</span><select name="priority"><option value="high">High</option><option value="medium" selected>Medium</option><option value="low">Low</option></select></label><label><span>Due</span><input type="date" name="dueDate" /></label><button type="submit" class="primary-btn">Save</button></form></div>
+      <div class="task-list" style="margin-top: 18px;">${state.tasks.map(taskItemCard).join('') || '<p class="empty-state">No tasks yet. Add the first step you want to take.</p>'}</div>
+    `;
+  }
 
-    const track = document.getElementById("pillar-track");
-    if (track) {
-      track.replaceChildren();
-      PILLARS.forEach((pillar) => {
-        const row = document.createElement("div");
-        row.className = "check-row";
-        const name = document.createElement("div");
-        name.textContent = pillar.name;
-        const note = document.createElement("input");
-        note.className = "act";
-        note.type = "text";
-        note.dataset.pillar = pillar.id;
-        note.value = data.actions[pillar.id].note;
-        note.setAttribute("aria-label", `Daily action for ${pillar.name}`);
-        const done = document.createElement("input");
-        done.type = "checkbox";
-        done.dataset.done = pillar.id;
-        done.checked = data.actions[pillar.id].done;
-        done.setAttribute("aria-label", `Mark ${pillar.name} complete`);
-        row.append(name, note, done);
-        track.append(row);
+  function renderHabits(state) {
+    return `
+      <div class="section-header"><h2>Habits</h2><button type="button" class="primary-btn" data-action="quick-add" data-type="habit">Add habit</button></div>
+      <div class="card"><form id="habit-form"><label><span>Habit name</span><input type="text" name="title" placeholder="Exercise, Qur'an, reading..." required /></label><button type="submit" class="primary-btn">Save habit</button></form></div>
+      <div class="habit-list" style="margin-top: 18px;">${state.habits.map((habit) => {
+        const streaks = getHabitStreaks(habit.history);
+        const done = habit.history.includes(nowISO());
+        return `<div class="habit-item"><div><strong>${escapeHtml(habit.title)}</strong><div class="small muted">Current streak: ${streaks.currentStreak} • Best streak: ${Math.max(Number(habit.bestStreak) || 0, streaks.bestStreak)}</div></div><div class="pills"><button type="button" class="${done ? 'done' : ''}" data-action="toggle-habit" data-id="${escapeHtml(habit.id)}">${done ? 'Completed' : 'Mark done'}</button><button type="button" class="danger-btn" data-action="delete-habit" data-id="${escapeHtml(habit.id)}" aria-label="Delete ${escapeHtml(habit.title)}">Delete</button></div></div>`;
+      }).join('') || '<p class="empty-state">No habits yet. Add one to build a consistent routine.</p>'}</div>
+    `;
+  }
+
+  function renderProgress(state) {
+    const today = startOfDay(new Date());
+    const weekStart = subDays(today, 6);
+    const monthStart = subDays(today, 29);
+    const weekRecords = state.history.filter((entry) => daysBetween(weekStart, new Date(`${entry.date}T00:00:00`)) >= 0 && daysBetween(new Date(`${entry.date}T00:00:00`), today) >= 0);
+    const monthRecords = state.history.filter((entry) => daysBetween(monthStart, new Date(`${entry.date}T00:00:00`)) >= 0 && daysBetween(new Date(`${entry.date}T00:00:00`), today) >= 0);
+    const average = (records) => records.length ? records.reduce((sum, entry) => sum + dailyScore(entry.scores).total, 0) / records.length : 0;
+    const weeklyAvg = average(weekRecords);
+    const monthlyAvg = average(monthRecords);
+    const strongest = state.history.length ? PILLARS.map((pillar) => ({ pillar, value: state.history.reduce((sum, entry) => sum + (Number(entry.scores[pillar.id]) || 0), 0) })).sort((a, b) => b.value - a.value)[0] : null;
+    return `
+      <div class="section-header"><h2>Progress</h2><span class="badge">This week ${weeklyAvg.toFixed(1)}/14 avg</span></div>
+      <div class="grid grid-4">
+        <div class="card metric"><span class="label">Today</span><strong>${dailyScore(state.scores).total}/14</strong><span class="small muted">${dailyScore(state.scores).pct.toFixed(1)}%</span></div>
+        <div class="card metric"><span class="label">This week</span><strong>${weeklyAvg.toFixed(1)}</strong><span class="small muted">Average</span></div>
+        <div class="card metric"><span class="label">This month</span><strong>${monthlyAvg.toFixed(1)}</strong><span class="small muted">Average per logged day</span></div>
+        <div class="card metric"><span class="label">Age 30</span><strong>${getLifeStats().age30Progress.toFixed(0)}%</strong><span class="small muted">${strongest ? strongest.pillar.name : 'N/A'}</span></div>
+      </div>
+      <div class="card" style="margin-top: 18px;">
+        <h3>Pillar performance</h3>
+        <div class="pillars">
+          ${PILLARS.map((pillar) => {
+            const score = state.history.reduce((sum, entry) => sum + (Number(entry.scores[pillar.id]) || 0), 0);
+            const possible = state.history.length * 2;
+            const pct = possible ? (score / possible) * 100 : 0;
+            return `<div class="score-row"><div>${pillar.name}</div><div class="small muted">${score} / ${possible}</div><div class="goal-progress"><span style="width:${pct}%"></span></div></div>`;
+          }).join('')}
+        </div>
+      </div>
+    `;
+  }
+
+  function renderLife(life, age) {
+    return `
+      <div class="section-header"><h2>Life</h2></div>
+      <div class="life-grid">
+        <div class="card"><h3>About me</h3><p class="muted">Muhammed Nezamudheen is a founder, software developer, and digital entrepreneur building a long-term life with clarity, discipline, and purpose.</p></div>
+        <div class="card"><h3>Life clock</h3><p class="muted">Age ${age.years} • ${life.to30.toLocaleString()} days to 30 • ${life.to60.toLocaleString()} days to 60</p></div>
+        <div class="card"><h3>Vision</h3><p class="muted">Build the man first. Build a stable, useful, credible life that can sustain peace, prosperity, and legacy.</p></div>
+      </div>
+      <div class="card" style="margin-top: 18px;"><h3>Mission stages</h3><div class="life-grid">${[['Reset & Foundation', 'Create stability in sleep, faith, health, money, and discipline.'], ['Build', 'Develop capability, business systems, and personal traction.'], ['Scale', 'Turn repeatable systems into predictable growth and leverage.'], ['Age-30 Preparation', 'Review all pillars and become the man intended by the vision.']].map(([title, text]) => `<div class="card"><h4>${title}</h4><p class="muted">${text}</p></div>`).join('')}</div></div>
+      <div class="card" style="margin-top: 18px;"><h3>Age-30 scorecard</h3><div class="pillars">${PILLARS.map((pillar) => `<div class="score-row"><div>${pillar.name}</div><div class="small muted">Vision → target → evidence</div><div class="tag">${getLifeStats().age30Progress.toFixed(0)}%</div></div>`).join('')}</div></div>
+    `;
+  }
+
+  function renderJournal(state) {
+    return `
+      <div class="section-header"><h2>Journal</h2></div>
+      <div class="card"><form id="journal-form"><label><span>Mood</span><select name="mood"><option value="focused">Focused</option><option value="strong">Strong</option><option value="tired">Tired</option><option value="grateful">Grateful</option></select></label><label><span>Entry</span><textarea name="text" placeholder="What went well? What went wrong? What should change tomorrow?" required></textarea></label><button type="submit" class="primary-btn">Save journal</button></form></div>
+      <div class="journal-list" style="margin-top: 18px;">${state.journal.map((entry) => `<div class="journal-item"><div class="section-header" style="margin-bottom: 8px;"><strong>${escapeHtml(entry.date)}</strong><span class="badge">${escapeHtml(entry.mood)}</span></div><p class="muted">${escapeHtml(entry.text)}</p><button type="button" class="danger-btn" data-action="delete-journal" data-id="${escapeHtml(entry.id)}">Delete entry</button></div>`).join('') || '<p class="empty-state">Your journal is empty. Add an entry whenever you want to reflect.</p>'}</div>
+    `;
+  }
+
+  function renderArchive(state) {
+    return `
+      <div class="section-header"><h2>Archive</h2></div>
+      <div class="card">
+        <h3>Add to your archive</h3>
+        <form id="archive-form" class="archive-form">
+          <label>Title<input type="text" name="title" maxlength="160" required /></label>
+          <label>Type<select name="type"><option value="achievement">Achievement</option><option value="review">Review</option><option value="milestone">Milestone</option><option value="memory">Memory</option></select></label>
+          <label>Date<input type="date" name="date" value="${nowISO()}" required /></label>
+          <label class="wide">Notes<textarea name="text" maxlength="2000" placeholder="Add a little context (optional)"></textarea></label>
+          <button type="submit" class="primary-btn">Save to archive</button>
+        </form>
+      </div>
+      <div class="archive-list" style="margin-top: 18px;">${state.archive.map((item) => `<div class="archive-item"><div class="section-header" style="margin-bottom: 8px;"><h3>${escapeHtml(item.title)}</h3><span class="badge">${escapeHtml(item.type)}</span></div><div class="small muted">${escapeHtml(item.date)}</div>${item.text ? `<p class="muted">${escapeHtml(item.text)}</p>` : ''}<button type="button" class="danger-btn" data-action="delete-archive" data-id="${escapeHtml(item.id)}">Delete</button></div>`).join('') || '<p class="empty-state">Nothing archived yet. Save milestones and reflections here.</p>'}</div>
+    `;
+  }
+
+  function renderApp() {
+    const state = loadState();
+    const root = document.getElementById('app-root');
+    if (!root) return;
+    const life = getLifeStats();
+    const age = getAgeNow();
+    const daily = dailyScore(state.scores);
+    const theme = state.theme === 'system' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : state.theme;
+    document.body.setAttribute('data-theme', theme);
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme === 'dark' ? '#10131a' : '#f4f5f8');
+
+    root.innerHTML = `
+      <div class="app-shell">
+        <aside class="sidebar">
+          <div class="brand"><div class="brand-kicker">Life OS</div><h1>MDNDN</h1><p>Build the man first. Build the life second. Build the legacy third.</p></div>
+          <nav class="nav" aria-label="Primary navigation">
+            ${[['today', 'Today'], ['goals', 'Goals'], ['tasks', 'Tasks'], ['habits', 'Habits'], ['progress', 'Progress'], ['life', 'Life'], ['journal', 'Journal'], ['archive', 'Archive']].map(([view, label], index) => `<button type="button" class="${state.currentView === view ? 'active' : ''}" data-view="${view}"${state.currentView === view ? ' aria-current="page"' : ''}><span class="nav-label">${label}</span><span class="nav-index">${String(index + 1).padStart(2, '0')}</span></button>`).join('')}
+          </nav>
+          <div class="sidebar-metric"><div class="label">Days to age 30</div><strong>${life.to30.toLocaleString()}</strong><div class="progress-bar"><span style="width:${Math.max(0, Math.min(100, (life.yearsLived / daysBetween(DOB, AGE30)) * 100))}%"></span></div></div>
+        </aside>
+        <main class="main-pane">
+          <header class="topbar"><div class="meta"><div class="eyebrow">${greeting()}</div><h2>${new Date().toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</h2></div><div class="actions"><button type="button" class="chip-btn" data-action="theme-toggle" aria-label="Switch to ${theme === 'dark' ? 'light' : 'dark'} mode">Use ${theme === 'dark' ? 'light' : 'dark'} mode</button><button type="button" class="chip-btn" data-action="backup-import">Import</button><button type="button" class="action-btn" data-action="backup-export">Export</button><button type="button" class="danger-btn" data-action="backup-clear">Clear</button></div></header>
+          <section class="view ${state.currentView === 'today' ? 'active' : ''}" data-view-section="today">${renderToday(state, life, daily, age)}</section>
+          <section class="view ${state.currentView === 'goals' ? 'active' : ''}" data-view-section="goals">${renderGoals(state)}</section>
+          <section class="view ${state.currentView === 'tasks' ? 'active' : ''}" data-view-section="tasks">${renderTasks(state)}</section>
+          <section class="view ${state.currentView === 'habits' ? 'active' : ''}" data-view-section="habits">${renderHabits(state)}</section>
+          <section class="view ${state.currentView === 'progress' ? 'active' : ''}" data-view-section="progress">${renderProgress(state)}</section>
+          <section class="view ${state.currentView === 'life' ? 'active' : ''}" data-view-section="life">${renderLife(life, age)}</section>
+          <section class="view ${state.currentView === 'journal' ? 'active' : ''}" data-view-section="journal">${renderJournal(state)}</section>
+          <section class="view ${state.currentView === 'archive' ? 'active' : ''}" data-view-section="archive">${renderArchive(state)}</section>
+        </main>
+      </div>
+      <button class="fab" type="button" aria-label="Quick actions" aria-expanded="false" data-action="quick-add-toggle">+</button>
+      <div class="quick-menu" id="quick-menu" aria-label="Quick actions"><button type="button" data-action="quick-add" data-type="task">Add task</button><button type="button" data-action="quick-add" data-type="goal">Add goal</button><button type="button" data-action="quick-add" data-type="habit">Add habit</button><button type="button" data-action="quick-add" data-type="journal">Write journal</button></div>
+    `;
+    bindGlobalEvents();
+  }
+
+  function taskItemCard(task) {
+    return `
+      <div class="task-item">
+        <div class="task-main">
+          <input type="checkbox" ${task.status === 'completed' ? 'checked' : ''} data-status="${escapeHtml(task.status)}" data-action="toggle-task" data-id="${escapeHtml(task.id)}" aria-label="Toggle task ${escapeHtml(task.title)}" />
+          <div>
+            <strong>${escapeHtml(task.title)}</strong>
+            ${task.description ? `<div class="small muted">${escapeHtml(task.description)}</div>` : ''}
+            <div class="task-meta">
+              <span class="tag ${escapeHtml(task.priority)}">${escapeHtml(task.priority)}</span>
+              ${task.dueDate ? `<span class="tag">Due ${escapeHtml(task.dueDate)}</span>` : ''}
+              <span class="tag">${escapeHtml(task.status.replace('_', ' '))}</span>
+            </div>
+          </div>
+        </div>
+        <button type="button" class="danger-btn" data-action="delete-task" data-id="${escapeHtml(task.id)}">Delete</button>
+      </div>
+    `;
+  }
+
+  function bindGlobalEvents() {
+    document.querySelectorAll('[data-view]').forEach((button) => {
+      button.addEventListener('click', () => {
+        const view = button.dataset.view;
+        if (view) { const next = loadState(); next.currentView = view; saveState(next); renderApp(); }
       });
-    }
+    });
 
-    const scoreBox = document.getElementById("night-scores");
-    if (scoreBox) {
-      scoreBox.replaceChildren();
-      PILLARS.forEach((pillar) => {
-        const row = document.createElement("div");
-        row.className = "check-row";
-        const name = document.createElement("div");
-        name.textContent = pillar.name;
-        const buttons = document.createElement("div");
-        buttons.className = "score-btns";
-        buttons.dataset.score = pillar.id;
-        [0, 1, 2].forEach((value) => {
-          const button = document.createElement("button");
-          button.type = "button";
-          button.dataset.v = String(value);
-          button.textContent = String(value);
-          button.setAttribute("aria-label", `${pillar.name}: score ${value}`);
-          button.setAttribute("aria-pressed", String(data.scores[pillar.id] === value));
-          if (data.scores[pillar.id] === value) button.classList.add(`on-${value}`);
-          buttons.append(button);
+    document.getElementById('archive-form')?.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const form = new FormData(event.currentTarget);
+      const title = String(form.get('title') || '').trim();
+      if (!title) return;
+      const next = loadState();
+      next.archive.unshift({ id: `archive-${Date.now()}`, title, type: String(form.get('type') || 'achievement'), date: String(form.get('date') || nowISO()), text: String(form.get('text') || '').trim() });
+      saveState(next);
+      renderApp();
+    });
+
+    document.querySelectorAll('[data-action="theme-toggle"]').forEach((button) => {
+      button.addEventListener('click', () => {
+        const next = loadState(); next.theme = document.body.dataset.theme === 'dark' ? 'light' : 'dark'; saveState(next); renderApp();
+      });
+    });
+
+    document.querySelectorAll('[data-action="backup-export"]').forEach((button) => {
+      button.addEventListener('click', () => {
+        const blob = new Blob([JSON.stringify(loadState(), null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob); const link = document.createElement('a'); link.href = url; link.download = `mdndn-backup-${isoDate(new Date())}.json`; document.body.appendChild(link); link.click(); link.remove(); window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+      });
+    });
+
+    document.querySelectorAll('[data-action="backup-import"]').forEach((button) => {
+      button.addEventListener('click', () => {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'application/json,.json';
+        input.addEventListener('change', (event) => {
+          const file = event.target.files?.[0];
+          if (!file) return;
+          const reader = new FileReader();
+          reader.onload = () => {
+            try {
+              const parsed = JSON.parse(String(reader.result));
+              if (!window.confirm('Importing a backup will replace the data saved in this browser. Continue?')) return;
+              const next = normalizeState(parsed);
+              if (saveState(next)) {
+                announce('Backup imported successfully.');
+                renderApp();
+              }
+            } catch (error) {
+              console.error('Unable to import backup.', error);
+              announce(`Backup could not be imported: ${error.message}`);
+            }
+          };
+          reader.onerror = () => announce('The selected backup file could not be read.');
+          reader.readAsText(file);
         });
-        row.append(name, buttons);
-        scoreBox.append(row);
+        input.click();
       });
-    }
-    updateScoreDisplay(data);
-    renderHistory();
-  }
-
-  function readDailyFromDom(data) {
-    data = normalizeDaily(isoDate(new Date()), data);
-    data.big3 = ["big1", "big2", "big3"].map((id) => document.getElementById(id)?.value || "");
-    PILLARS.forEach((p) => {
-      const note = document.querySelector(`[data-pillar="${p.id}"]`);
-      const done = document.querySelector(`[data-done="${p.id}"]`);
-      data.actions[p.id] = { note: note ? note.value : p.action, done: !!(done && done.checked) };
     });
-    return data;
-  }
 
-  function persistDaily() {
-    const dateStr = isoDate(new Date());
-    const data = readDailyFromDom(load(dailyKey(dateStr), defaultDaily(dateStr)));
-    save(dailyKey(dateStr), data);
-    updateScoreDisplay(data);
-  }
-
-  function updateScoreDisplay(data) {
-    const vals = PILLARS.map((p) => data.scores[p.id]).filter((v) => v !== null && v !== undefined);
-    const total = PILLARS.reduce((sum, p) => sum + (Number(data.scores[p.id]) || 0), 0);
-    const pct = (total / 14) * 100;
-    const el = document.getElementById("night-total");
-    if (el) el.textContent = vals.length ? `${total}/14 = ${pct.toFixed(1)}%` : "— / 14";
-  }
-
-  function renderHistory() {
-    const box = document.getElementById("score-history");
-    if (!box) return;
-    const rows = [];
-    try {
-      for (let i = 0; i < localStorage.length; i += 1) {
-        const key = localStorage.key(i);
-        if (key && key.startsWith("mdndn.daily.")) {
-          const d = load(key, null);
-          if (!d || typeof d !== "object") continue;
-          const normalized = normalizeDaily(key.slice(12), d);
-          const total = PILLARS.reduce((sum, p) => sum + (normalized.scores[p.id] ?? 0), 0);
-          const scored = PILLARS.some((p) => normalized.scores[p.id] !== null);
-          if (scored) rows.push({ date: normalized.date, total, pct: (total / 14) * 100 });
+    document.querySelectorAll('[data-action="backup-clear"]').forEach((button) => {
+      button.addEventListener('click', () => {
+        if (window.confirm('Clear all MDNDN data from this browser? This cannot be undone.')) {
+          try {
+            localStorage.removeItem(STORAGE_KEY);
+            renderApp();
+            announce('Saved data cleared.');
+          } catch (error) {
+            console.error('Unable to clear local state.', error);
+            announce('Saved data could not be cleared. Check your browser storage settings.');
+          }
         }
-      }
-    } catch (error) {
-      console.error("Unable to read diary score history.", error);
-      setStatus("Diary history could not be read from this browser.", true);
-      return;
-    }
-    rows.sort((a, b) => (a.date < b.date ? 1 : -1));
-    box.replaceChildren();
-    if (!rows.length) {
-      box.textContent = "No scored days yet.";
-      return;
-    }
-    rows.slice(0, 21).forEach((row) => {
-      const line = document.createElement("div");
-      line.textContent = `${row.date} — ${row.total}/14 (${row.pct.toFixed(1)}%)`;
-      box.append(line);
-    });
-  }
-
-  function bindDaily() {
-    document.getElementById("daily-panel")?.addEventListener("input", persistDaily);
-    document.getElementById("daily-panel")?.addEventListener("change", persistDaily);
-    document.getElementById("night-scores")?.addEventListener("click", (e) => {
-      const btn = e.target.closest("button[data-v]");
-      if (!btn) return;
-      const group = btn.parentElement;
-      const id = group.dataset.score;
-      const dateStr = isoDate(new Date());
-      const data = readDailyFromDom(load(dailyKey(dateStr), defaultDaily(dateStr)));
-      data.scores[id] = Number(btn.dataset.v);
-      save(dailyKey(dateStr), data);
-      group.querySelectorAll("button").forEach((button) => {
-        button.className = "";
-        button.setAttribute("aria-pressed", "false");
-      });
-      btn.className = `on-${btn.dataset.v}`;
-      btn.setAttribute("aria-pressed", "true");
-      updateScoreDisplay(data);
-      renderHistory();
-    });
-  }
-
-  function bindWeekly() {
-    const key = `mdndn.weekly.${isoWeekKey(new Date())}`;
-    const stored = load(key, {
-      q1: "", q2: "", q3: "", q4: "", q5: "", q6: "", q7: "",
-      income: "", expenses: "", savings: "", debt: "",
-      revenue: "", profit: "", leads: "", sales: "",
-      exercise: "", learning: "", spiritual: "", sleep: ""
-    });
-    const data = stored && typeof stored === "object" && !Array.isArray(stored) ? stored : {};
-    Object.entries(data).forEach(([k, v]) => {
-      const el = document.getElementById(`w-${k}`);
-      if (el) el.value = v;
-    });
-    const weekLabel = document.getElementById("week-key");
-    if (weekLabel) weekLabel.textContent = isoWeekKey(new Date());
-    document.getElementById("weekly-panel")?.addEventListener("input", () => {
-      const next = {};
-      $$("#weekly-panel [id^='w-']").forEach((el) => {
-        next[el.id.slice(2)] = el.value;
-      });
-      save(key, next);
-    });
-  }
-
-  function bindMonthly() {
-    const key = `mdndn.monthly.${monthKey(new Date())}`;
-    const fields = ["mental", "physical", "spiritual", "financial", "personal", "character", "business", "family"];
-    const stored = load(key, Object.fromEntries(fields.map((f) => [f, ""])));
-    const data = stored && typeof stored === "object" && !Array.isArray(stored) ? stored : {};
-    fields.forEach((f) => {
-      const el = document.getElementById(`m-${f}`);
-      if (el) el.value = data[f] ?? "";
-    });
-    const note = document.getElementById("m-note");
-    if (note) note.value = data.note || "";
-    const label = document.getElementById("month-key");
-    if (label) label.textContent = monthKey(new Date());
-    const overall = document.getElementById("m-overall");
-    const updateOverall = () => {
-      const controls = fields.map((f) => document.getElementById(`m-${f}`)).filter(Boolean);
-      const invalidScore = controls.some((control) => !control.checkValidity());
-      const nums = controls
-        .filter((control) => control.value !== "" && control.checkValidity())
-        .map((control) => Number(control.value));
-      const avg = nums.length ? (nums.reduce((a, b) => a + b, 0) / nums.length).toFixed(1) : "—";
-      if (overall) overall.textContent = invalidScore ? "Use scores from 0 to 100" : avg;
-      const next = {};
-      fields.forEach((f) => { next[f] = document.getElementById(`m-${f}`)?.value || ""; });
-      next.note = document.getElementById("m-note")?.value || "";
-      save(key, next);
-    };
-    updateOverall();
-    document.getElementById("monthly-panel")?.addEventListener("input", updateOverall);
-  }
-
-  function bindTargets() {
-    const key = "mdndn.targets";
-    const stored = load(key, {});
-    const data = stored && typeof stored === "object" && !Array.isArray(stored) ? stored : {};
-    $$("[data-target]").forEach((el) => {
-      el.value = data[el.dataset.target] || "";
-      el.addEventListener("input", () => {
-        const next = load(key, {});
-        next[el.dataset.target] = el.value;
-        save(key, next);
       });
     });
-  }
 
-  function bindAnswers() {
-    const key = "mdndn.answers";
-    const stored = load(key, {});
-    const data = stored && typeof stored === "object" && !Array.isArray(stored) ? stored : {};
-    $$("[data-answer]").forEach((el) => {
-      el.value = data[el.dataset.answer] || "";
-      el.addEventListener("input", () => {
-        const next = load(key, {});
-        next[el.dataset.answer] = el.value;
-        save(key, next);
+    document.querySelectorAll('[data-action="quick-add-toggle"]').forEach((button) => {
+      button.addEventListener('click', () => {
+        const menu = document.getElementById('quick-menu');
+        const open = menu.classList.toggle('open');
+        button.setAttribute('aria-expanded', String(open));
       });
     });
-  }
 
-  function bindNav() {
-    const toggle = document.getElementById("menu-toggle");
-    const sidebar = document.getElementById("sidebar");
-    const backdrop = document.getElementById("nav-backdrop");
-    const setOpen = (open) => {
-      document.body.classList.toggle("nav-open", open);
-      if (toggle) {
-        toggle.setAttribute("aria-expanded", String(open));
-        toggle.setAttribute("aria-label", open ? "Close menu" : "Open menu");
-      }
-      if (sidebar) {
-        sidebar.inert = window.matchMedia("(max-width: 980px)").matches && !open;
-      }
-      if (open) sidebar?.querySelector("a")?.focus();
-    };
-    setOpen(false);
-    toggle?.addEventListener("click", () => setOpen(!document.body.classList.contains("nav-open")));
-    backdrop?.addEventListener("click", () => {
-      setOpen(false);
-      toggle?.focus();
-    });
-    $$(".nav-list a").forEach((a) => {
-      a.addEventListener("click", () => setOpen(false));
-    });
-    document.addEventListener("keydown", (event) => {
-      if (event.key === "Escape" && document.body.classList.contains("nav-open")) {
-        setOpen(false);
-        toggle?.focus();
-      }
-    });
-    window.addEventListener("resize", () => setOpen(document.body.classList.contains("nav-open")));
-    const links = $$(".nav-list a");
-    const sections = links
-      .map((a) => document.getElementById(a.hash.slice(1)))
-      .filter(Boolean);
-    const onScroll = () => {
-      const y = window.scrollY + 90;
-      let current = sections[0];
-      sections.forEach((s) => {
-        if (s.getBoundingClientRect().top + window.scrollY <= y) current = s;
+    document.querySelectorAll('[data-action="quick-add"]').forEach((button) => {
+      button.addEventListener('click', () => {
+        const type = button.dataset.type || 'task';
+        const next = loadState();
+        next.currentView = type === 'goal' ? 'goals' : type === 'habit' ? 'habits' : type === 'journal' ? 'journal' : 'tasks';
+        saveState(next); renderApp();
       });
-      links.forEach((a) => {
-        const active = a.hash === `#${current.id}`;
-        a.classList.toggle("active", active);
-        if (active) a.setAttribute("aria-current", "location");
-        else a.removeAttribute("aria-current");
-      });
-    };
-    window.addEventListener("scroll", onScroll, { passive: true });
-    onScroll();
-  }
+    });
 
-  function bindExport() {
-    document.getElementById("export-diary")?.addEventListener("click", () => {
-      try {
-        const dump = {};
-        for (let i = 0; i < localStorage.length; i += 1) {
-          const key = localStorage.key(i);
-          if (key && key.startsWith("mdndn.")) dump[key] = load(key, null);
-        }
-        const blob = new Blob([JSON.stringify(dump, null, 2)], { type: "application/json" });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = `mdndn-diary-${isoDate(new Date())}.json`;
-        link.click();
-        window.setTimeout(() => URL.revokeObjectURL(url), 1000);
-        setStatus("Diary backup downloaded.", false, "transfer-status");
-      } catch (error) {
-        console.error("Unable to export the diary backup.", error);
-        setStatus("The diary backup could not be created. Check browser storage and try again.", true, "transfer-status");
-      }
+    document.querySelectorAll('[data-action="toggle-habit"]').forEach((button) => {
+      button.addEventListener('click', () => {
+        const next = loadState();
+        const habit = next.habits.find((item) => item.id === button.dataset.id);
+        if (!habit) return;
+        const todayKey = nowISO();
+        if (habit.history.includes(todayKey)) habit.history = habit.history.filter((date) => date !== todayKey);
+        else habit.history.push(todayKey);
+        const streaks = getHabitStreaks(habit.history);
+        habit.currentStreak = streaks.currentStreak;
+        habit.bestStreak = Math.max(Number(habit.bestStreak) || 0, streaks.bestStreak);
+        saveState(next);
+        renderApp();
+      });
     });
-    document.getElementById("import-diary")?.addEventListener("change", (e) => {
-      const file = e.target.files?.[0];
-      if (!file) return;
-      const importInput = e.target;
-      if (file.size > 5 * 1024 * 1024) {
-        setStatus("That backup is larger than 5 MB and was not imported.", true, "transfer-status");
-        importInput.value = "";
+
+    document.getElementById('task-form')?.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const form = new FormData(event.currentTarget);
+      const next = loadState();
+      const title = String(form.get('title') || '').trim();
+      if (!title) return; next.tasks.unshift({ id: `task-${Date.now()}`, title, description: '', priority: String(form.get('priority') || 'medium'), dueDate: String(form.get('dueDate') || ''), status: 'todo', pillar: 'business', createdAt: nowISO() }); saveState(next); renderApp();
+    });
+
+    document.getElementById('goal-form')?.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const form = new FormData(event.currentTarget);
+      const title = String(form.get('title') || '').trim();
+      const target = Number(form.get('target'));
+      const current = Number(form.get('current'));
+      if (!title || !Number.isFinite(target) || target <= 0 || !Number.isFinite(current) || current < 0) {
+        announce('Enter a goal name, a positive target, and a valid current value.');
         return;
       }
-      const reader = new FileReader();
-      reader.onload = () => {
-        try {
-          const dump = JSON.parse(String(reader.result));
-          if (!dump || typeof dump !== "object" || Array.isArray(dump)) {
-            throw new Error("The backup must contain a JSON object.");
-          }
-          const entries = Object.entries(dump);
-          const allowedKey = /^mdndn\.(?:daily\.\d{4}-\d{2}-\d{2}|weekly\.\d{4}-W\d{2}|monthly\.\d{4}-\d{2}|targets|answers)$/;
-          if (!entries.length || entries.some(([key, value]) =>
-            !allowedKey.test(key) || !value || typeof value !== "object" || Array.isArray(value)
-          )) {
-            throw new Error("The file does not contain a valid Life OS diary backup.");
-          }
-          if (!window.confirm("Merge this backup into the diary saved in this browser? Existing matching dates will be replaced.")) {
-            importInput.value = "";
-            return;
-          }
-          for (const [key, value] of entries) {
-            if (!save(key, value)) throw new Error("Browser storage could not save the imported backup.");
-          }
-          setStatus("Diary imported. Reloading your saved entries…", false, "transfer-status");
-          window.setTimeout(() => location.reload(), 250);
-        } catch (error) {
-          console.error("Unable to import the diary backup.", error);
-          setStatus(error.message || "The selected file could not be imported.", true, "transfer-status");
-          importInput.value = "";
-        }
-      };
-      reader.onerror = () => {
-        console.error("Unable to read the selected diary backup.", reader.error);
-        setStatus("The selected backup file could not be read.", true, "transfer-status");
-        importInput.value = "";
-      };
-      reader.readAsText(file);
+      const next = loadState();
+      next.goals.unshift({
+        id: `goal-${Date.now()}`,
+        title,
+        description: String(form.get('description') || '').trim(),
+        category: String(form.get('category') || 'short-term'),
+        pillar: String(form.get('pillar') || 'personal'),
+        current,
+        target,
+        unit: String(form.get('unit') || '').trim(),
+        status: current >= target ? 'completed' : 'on-track',
+        deadline: String(form.get('deadline') || ''),
+      });
+      saveState(next);
+      renderApp();
     });
+
+    document.querySelectorAll('.goal-progress-form').forEach((goalForm) => {
+      goalForm.addEventListener('submit', (event) => {
+        event.preventDefault();
+        const form = new FormData(goalForm);
+        const current = Number(form.get('current'));
+        if (!Number.isFinite(current) || current < 0) {
+          announce('Goal progress must be zero or a positive number.');
+          return;
+        }
+        const next = loadState();
+        const goal = next.goals.find((item) => item.id === goalForm.dataset.id);
+        if (!goal) return;
+        goal.current = current;
+        goal.status = current >= goal.target ? 'completed' : 'on-track';
+        saveState(next);
+        renderApp();
+      });
+    });
+
+    document.getElementById('habit-form')?.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const form = new FormData(event.currentTarget); const title = String(form.get('title') || '').trim(); if (!title) return; const next = loadState(); next.habits.push({ id: `habit-${Date.now()}`, title, currentStreak: 0, bestStreak: 0, history: [] }); saveState(next); renderApp();
+    });
+
+    document.getElementById('journal-form')?.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const form = new FormData(event.currentTarget); const text = String(form.get('text') || '').trim(); if (!text) return; const next = loadState(); next.journal.unshift({ id: `jour-${Date.now()}`, date: nowISO(), mood: String(form.get('mood') || 'focused'), text }); saveState(next); renderApp();
+    });
+
+    document.getElementById('big3-form')?.addEventListener('submit', (event) => {
+      event.preventDefault(); const form = new FormData(event.currentTarget); const next = loadState(); next.big3 = [0,1,2].map((index) => String(form.get(`big${index}`) || '').trim()).filter(Boolean); while (next.big3.length < 3) next.big3.push(''); saveState(next); renderApp();
+    });
+
+    document.querySelectorAll('[data-pillar]').forEach((group) => {
+      group.addEventListener('click', (event) => {
+        const btn = event.target.closest('button[data-score]'); if (!btn) return; const next = loadState(); next.scores[group.dataset.pillar] = Number(btn.dataset.score); recordTodayScore(next); saveState(next); renderApp();
+      });
+    });
+
+    document.querySelectorAll('[data-action="toggle-task"]').forEach((input) => {
+      input.addEventListener('change', () => {
+        const next = loadState(); const task = next.tasks.find((item) => item.id === input.dataset.id); if (!task) return; task.status = input.checked ? 'completed' : (input.dataset.status === 'completed' ? 'todo' : input.dataset.status); saveState(next); renderApp();
+      });
+    });
+
   }
 
-  renderClock();
-  setInterval(renderClock, 60000);
-  renderDaily();
-  bindDaily();
-  bindWeekly();
-  bindMonthly();
-  bindTargets();
-  bindAnswers();
-  bindNav();
-  bindExport();
+  document.addEventListener('click', (event) => {
+    const quickMenu = document.getElementById('quick-menu'); if (quickMenu && !event.target.closest('.fab') && !event.target.closest('#quick-menu')) quickMenu.classList.remove('open');
+    const deleteBtn = event.target.closest('[data-action^="delete-"]');
+    if (deleteBtn) {
+      const next = loadState();
+      const collectionByAction = {
+        'delete-task': 'tasks',
+        'delete-goal': 'goals',
+        'delete-habit': 'habits',
+        'delete-journal': 'journal',
+        'delete-archive': 'archive',
+      };
+      const collection = collectionByAction[deleteBtn.dataset.action];
+      if (collection) {
+        next[collection] = next[collection].filter((item) => item.id !== deleteBtn.dataset.id);
+        saveState(next);
+        renderApp();
+      }
+    }
+  });
+
+  document.addEventListener('DOMContentLoaded', renderApp);
 })();

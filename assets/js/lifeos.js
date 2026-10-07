@@ -179,7 +179,7 @@
   function renderToday(state, life, daily, age) {
     return `
       <div class="section-header">
-        <h2>Today</h2>
+        <h2>Overview</h2>
         <div class="pills">
           <span class="badge">Age ${age.years}</span>
           <span class="badge">${life.to30.toLocaleString()} days to 30</span>
@@ -369,19 +369,19 @@
     const daily = dailyScore(state.scores);
     const theme = state.theme === 'system' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : state.theme;
     document.body.setAttribute('data-theme', theme);
-    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme === 'dark' ? '#10131a' : '#f4f5f8');
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme === 'dark' ? '#0f0d0a' : '#f3efe6');
 
     root.innerHTML = `
       <div class="app-shell">
         <aside class="sidebar">
           <div class="brand"><div class="brand-kicker">Life OS</div><h1>MDNDN</h1><p>Build the man first. Build the life second. Build the legacy third.</p></div>
           <nav class="nav" aria-label="Primary navigation">
-            ${[['today', 'Today'], ['goals', 'Goals'], ['tasks', 'Tasks'], ['habits', 'Habits'], ['progress', 'Progress'], ['life', 'Life'], ['journal', 'Journal'], ['archive', 'Archive']].map(([view, label], index) => `<button type="button" class="${state.currentView === view ? 'active' : ''}" data-view="${view}"${state.currentView === view ? ' aria-current="page"' : ''}><span class="nav-label">${label}</span><span class="nav-index">${String(index + 1).padStart(2, '0')}</span></button>`).join('')}
+            ${[['today', 'Overview'], ['goals', 'Goals'], ['tasks', 'Tasks'], ['habits', 'Habits'], ['progress', 'Progress'], ['life', 'Life'], ['journal', 'Journal'], ['archive', 'Archive']].map(([view, label], index) => `<button type="button" class="${state.currentView === view ? 'active' : ''}" data-view="${view}"${state.currentView === view ? ' aria-current="page"' : ''}><span class="nav-label">${label}</span><span class="nav-index">${String(index + 1).padStart(2, '0')}</span></button>`).join('')}
           </nav>
           <div class="sidebar-metric"><div class="label">Days to age 30</div><strong>${life.to30.toLocaleString()}</strong><div class="progress-bar"><span style="width:${Math.max(0, Math.min(100, (life.yearsLived / daysBetween(DOB, AGE30)) * 100))}%"></span></div></div>
         </aside>
         <main class="main-pane">
-          <header class="topbar"><div class="meta"><div class="eyebrow">${greeting()}</div><h2>${new Date().toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</h2></div><div class="actions"><button type="button" class="chip-btn" data-action="theme-toggle" aria-label="Switch to ${theme === 'dark' ? 'light' : 'dark'} mode">Use ${theme === 'dark' ? 'light' : 'dark'} mode</button><button type="button" class="chip-btn" data-action="backup-import">Import</button><button type="button" class="action-btn" data-action="backup-export">Export</button><button type="button" class="danger-btn" data-action="backup-clear">Clear</button></div></header>
+          <header class="topbar"><div class="meta"><div class="eyebrow">${greeting()}</div><h2>${new Date().toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</h2></div><div class="actions"><a class="chip-btn" href="index.html">Read home</a><a class="chip-btn" href="user-guide.html">User guide</a><button type="button" class="chip-btn" data-action="theme-toggle" aria-label="Switch to ${theme === 'dark' ? 'light' : 'dark'} mode">Use ${theme === 'dark' ? 'light' : 'dark'} mode</button><button type="button" class="chip-btn" data-action="backup-import">Import</button><button type="button" class="action-btn" data-action="backup-export">Export</button><button type="button" class="danger-btn" data-action="backup-clear">Clear</button></div></header>
           <section class="view ${state.currentView === 'today' ? 'active' : ''}" data-view-section="today">${renderToday(state, life, daily, age)}</section>
           <section class="view ${state.currentView === 'goals' ? 'active' : ''}" data-view-section="goals">${renderGoals(state)}</section>
           <section class="view ${state.currentView === 'tasks' ? 'active' : ''}" data-view-section="tasks">${renderTasks(state)}</section>
@@ -422,7 +422,7 @@
     document.querySelectorAll('[data-view]').forEach((button) => {
       button.addEventListener('click', () => {
         const view = button.dataset.view;
-        if (view) { const next = loadState(); next.currentView = view; saveState(next); renderApp(); }
+        if (view) { const next = loadState(); next.currentView = view; if (saveState(next)) renderApp(); }
       });
     });
 
@@ -433,13 +433,12 @@
       if (!title) return;
       const next = loadState();
       next.archive.unshift({ id: `archive-${Date.now()}`, title, type: String(form.get('type') || 'achievement'), date: String(form.get('date') || nowISO()), text: String(form.get('text') || '').trim() });
-      saveState(next);
-      renderApp();
+      if (saveState(next)) renderApp();
     });
 
     document.querySelectorAll('[data-action="theme-toggle"]').forEach((button) => {
       button.addEventListener('click', () => {
-        const next = loadState(); next.theme = document.body.dataset.theme === 'dark' ? 'light' : 'dark'; saveState(next); renderApp();
+        const next = loadState(); next.theme = document.body.dataset.theme === 'dark' ? 'light' : 'dark'; if (saveState(next)) renderApp();
       });
     });
 
@@ -508,7 +507,12 @@
         const type = button.dataset.type || 'task';
         const next = loadState();
         next.currentView = type === 'goal' ? 'goals' : type === 'habit' ? 'habits' : type === 'journal' ? 'journal' : 'tasks';
-        saveState(next); renderApp();
+        if (!saveState(next)) return;
+        renderApp();
+        const field = type === 'journal'
+          ? document.querySelector('#journal-form [name="text"]')
+          : document.querySelector(`#${type}-form [name="title"]`);
+        field?.focus();
       });
     });
 
@@ -523,8 +527,7 @@
         const streaks = getHabitStreaks(habit.history);
         habit.currentStreak = streaks.currentStreak;
         habit.bestStreak = Math.max(Number(habit.bestStreak) || 0, streaks.bestStreak);
-        saveState(next);
-        renderApp();
+        if (saveState(next)) renderApp();
       });
     });
 
@@ -533,7 +536,7 @@
       const form = new FormData(event.currentTarget);
       const next = loadState();
       const title = String(form.get('title') || '').trim();
-      if (!title) return; next.tasks.unshift({ id: `task-${Date.now()}`, title, description: '', priority: String(form.get('priority') || 'medium'), dueDate: String(form.get('dueDate') || ''), status: 'todo', pillar: 'business', createdAt: nowISO() }); saveState(next); renderApp();
+      if (!title) return; next.tasks.unshift({ id: `task-${Date.now()}`, title, description: '', priority: String(form.get('priority') || 'medium'), dueDate: String(form.get('dueDate') || ''), status: 'todo', pillar: 'business', createdAt: nowISO() }); if (saveState(next)) renderApp();
     });
 
     document.getElementById('goal-form')?.addEventListener('submit', (event) => {
@@ -559,8 +562,7 @@
         status: current >= target ? 'completed' : 'on-track',
         deadline: String(form.get('deadline') || ''),
       });
-      saveState(next);
-      renderApp();
+      if (saveState(next)) renderApp();
     });
 
     document.querySelectorAll('.goal-progress-form').forEach((goalForm) => {
@@ -577,34 +579,33 @@
         if (!goal) return;
         goal.current = current;
         goal.status = current >= goal.target ? 'completed' : 'on-track';
-        saveState(next);
-        renderApp();
+        if (saveState(next)) renderApp();
       });
     });
 
     document.getElementById('habit-form')?.addEventListener('submit', (event) => {
       event.preventDefault();
-      const form = new FormData(event.currentTarget); const title = String(form.get('title') || '').trim(); if (!title) return; const next = loadState(); next.habits.push({ id: `habit-${Date.now()}`, title, currentStreak: 0, bestStreak: 0, history: [] }); saveState(next); renderApp();
+      const form = new FormData(event.currentTarget); const title = String(form.get('title') || '').trim(); if (!title) return; const next = loadState(); next.habits.push({ id: `habit-${Date.now()}`, title, currentStreak: 0, bestStreak: 0, history: [] }); if (saveState(next)) renderApp();
     });
 
     document.getElementById('journal-form')?.addEventListener('submit', (event) => {
       event.preventDefault();
-      const form = new FormData(event.currentTarget); const text = String(form.get('text') || '').trim(); if (!text) return; const next = loadState(); next.journal.unshift({ id: `jour-${Date.now()}`, date: nowISO(), mood: String(form.get('mood') || 'focused'), text }); saveState(next); renderApp();
+      const form = new FormData(event.currentTarget); const text = String(form.get('text') || '').trim(); if (!text) return; const next = loadState(); next.journal.unshift({ id: `jour-${Date.now()}`, date: nowISO(), mood: String(form.get('mood') || 'focused'), text }); if (saveState(next)) renderApp();
     });
 
     document.getElementById('big3-form')?.addEventListener('submit', (event) => {
-      event.preventDefault(); const form = new FormData(event.currentTarget); const next = loadState(); next.big3 = [0,1,2].map((index) => String(form.get(`big${index}`) || '').trim()).filter(Boolean); while (next.big3.length < 3) next.big3.push(''); saveState(next); renderApp();
+      event.preventDefault(); const form = new FormData(event.currentTarget); const next = loadState(); next.big3 = [0,1,2].map((index) => String(form.get(`big${index}`) || '').trim()); if (saveState(next)) renderApp();
     });
 
     document.querySelectorAll('[data-pillar]').forEach((group) => {
       group.addEventListener('click', (event) => {
-        const btn = event.target.closest('button[data-score]'); if (!btn) return; const next = loadState(); next.scores[group.dataset.pillar] = Number(btn.dataset.score); recordTodayScore(next); saveState(next); renderApp();
+        const btn = event.target.closest('button[data-score]'); if (!btn) return; const next = loadState(); next.scores[group.dataset.pillar] = Number(btn.dataset.score); recordTodayScore(next); if (saveState(next)) renderApp();
       });
     });
 
     document.querySelectorAll('[data-action="toggle-task"]').forEach((input) => {
       input.addEventListener('change', () => {
-        const next = loadState(); const task = next.tasks.find((item) => item.id === input.dataset.id); if (!task) return; task.status = input.checked ? 'completed' : (input.dataset.status === 'completed' ? 'todo' : input.dataset.status); saveState(next); renderApp();
+        const next = loadState(); const task = next.tasks.find((item) => item.id === input.dataset.id); if (!task) return; task.status = input.checked ? 'completed' : (input.dataset.status === 'completed' ? 'todo' : input.dataset.status); if (saveState(next)) renderApp();
       });
     });
 
@@ -625,8 +626,7 @@
       const collection = collectionByAction[deleteBtn.dataset.action];
       if (collection) {
         next[collection] = next[collection].filter((item) => item.id !== deleteBtn.dataset.id);
-        saveState(next);
-        renderApp();
+        if (saveState(next)) renderApp();
       }
     }
   });

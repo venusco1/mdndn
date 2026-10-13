@@ -87,6 +87,37 @@ or `/admin/`. For a private deployment, set a unique `DJANGO_SECRET_KEY`,
 protect database and backup files. Do not expose Django's development server
 directly to the public internet.
 
+## Production deployment (Render + Neon)
+
+This project is ready for a free Render web service backed by a Neon free
+PostgreSQL database. In production, set the following environment variables in
+Render's dashboard or `render.yaml`:
+
+- `SECRET_KEY` — a unique secret value for Django.
+- `DEBUG` — set to `False`.
+- `DATABASE_URL` — the Neon PostgreSQL connection string, including
+  `?sslmode=require`.
+- `DJANGO_ALLOWED_HOSTS` — optional if Render auto-provides
+  `RENDER_EXTERNAL_HOSTNAME`; the app also reads that automatically.
+
+Render build command:
+
+```bash
+./build.sh
+```
+
+Render start command:
+
+```bash
+python -m gunicorn vision30.wsgi:application --bind 0.0.0.0:$PORT
+```
+
+The app uses WhiteNoise for static files and runs `collectstatic` during build.
+The project keeps the local SQLite database for development and expects a fresh
+Neon PostgreSQL database for production. Run `python manage.py migrate --noinput`
+after the deployment environment is connected and then create a superuser with
+`python manage.py createsuperuser`.
+
 ## Tests
 
 ```powershell

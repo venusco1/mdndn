@@ -1,0 +1,10 @@
+{% extends "lifeos/base.html" %}
+{% block content %}
+<header class="section-header"><div><p class="eyebrow">Next actions, priorities and deadlines</p><h2>Tasks</h2></div></header>
+<article class="card"><h3>Add task</h3><form method="post" action="{% url 'create_task' %}">{% csrf_token %}<input type="hidden" name="next" value="tasks">{{ task_form.as_p }}<button class="primary-btn" type="submit">Save task</button></form></article>
+<article class="card section-gap"><h3>All tasks</h3>{% for task in tasks %}<div class="task-card">
+  <form method="post" action="{% url 'update_task' task.pk %}">{% csrf_token %}<input type="hidden" name="next" value="tasks"><input type="hidden" name="status" value="{% if task.status == 'completed' %}todo{% else %}completed{% endif %}"><button class="check-button" aria-label="Toggle {{ task.title }}" type="submit">{% if task.status == 'completed' %}✓{% else %}○{% endif %}</button></form>
+  <span class="{% if task.status == 'completed' %}is-complete{% endif %}">{{ task.title }}<small>{{ task.get_status_display }} · {{ task.get_priority_display }}{% if task.due_date %} · Due {{ task.due_date }}{% endif %}{% if task.pillar %} · {{ task.pillar.name }}{% endif %}{% if task.block %} · {{ task.block }}{% endif %}</small></span>
+  <form method="post" action="{% url 'delete_record' 'task' task.pk %}">{% csrf_token %}<input type="hidden" name="next" value="tasks"><button class="danger-btn" type="submit">Delete</button></form>
+</div>{% empty %}<p class="empty-state">No tasks added. Start with one concrete next action.</p>{% endfor %}</article>
+{% endblock %}

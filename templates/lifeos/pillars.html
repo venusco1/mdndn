@@ -1,0 +1,5 @@
+{% extends "lifeos/base.html" %}
+{% block content %}
+<header class="section-header"><div><p class="eyebrow">Eight permanent areas</p><h2>Pillars</h2></div><span class="badge">80 stages · 10 shared blocks</span></header>
+<div class="grid grid-2">{% for pillar in pillars %}<article class="card"><div class="section-header"><h3>{{ pillar.name }}</h3><a href="{% url 'pillar_detail' pillar.pk %}">Open →</a></div><p>{{ pillar.description }}</p><p class="small muted">Measurement: {{ pillar.get_scoring_method_display }}</p><div class="stage-mini-grid">{% for stage in pillar.stages.all %}<a class="stage-chip {% if stage.completed_at %}stage-done{% endif %}" href="{% url 'pillar_detail' pillar.pk %}">S{{ stage.number|stringformat:"02d" }}{% if stage.completed_at %} ✓{% endif %}</a>{% endfor %}</div></article>{% empty %}<p class="empty-state">No pillars are configured yet.</p>{% endfor %}</div>
+{% endblock %}

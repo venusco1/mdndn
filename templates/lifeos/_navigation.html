@@ -1,0 +1,5 @@
+<nav class="nav" aria-label="Main navigation">
+  {% for route,label,group in navigation %}
+    <a class="{% if request.resolver_match.url_name == route or request.resolver_match.url_name == 'overview' and route == 'dashboard' or request.resolver_match.url_name == 'block_detail' and route == 'blocks' or request.resolver_match.url_name == 'pillar_detail' and route == 'pillars' %}active{% endif %}" href="{% url route %}" {% if request.resolver_match.url_name == route %}aria-current="page"{% endif %}>{{ label }}</a>
+  {% endfor %}
+</nav>

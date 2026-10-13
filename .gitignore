@@ -142,6 +142,17 @@ vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .vite/
 
+# Django and Python
+__pycache__/
+*.py[cod]
+.venv/
+db.sqlite3
+db.sqlite3-journal
+staticfiles/
+.coverage
+.pytest_cache/
+*.sqlite3
+
 # Astro generated types
 .astro/
 

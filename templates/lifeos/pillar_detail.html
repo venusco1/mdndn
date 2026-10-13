@@ -1,0 +1,18 @@
+{% extends "lifeos/base.html" %}
+{% load lifeos_tags %}
+{% block content %}
+<p class="breadcrumbs"><a href="{% url 'pillars' %}">Pillars</a> / {{ pillar.name }}</p>
+<header class="section-header"><div><p class="eyebrow">Mission, learning, practice, evidence</p><h2>{{ pillar.name }}</h2></div></header>
+<div class="grid grid-2">
+  <article class="card"><p>{{ pillar.description }}</p><h3>Scoring method</h3><p>Measurement remains pillar-specific; evidence and targets are not reduced to a universal life score.</p><form method="post" action="{% url 'save_pillar_scoring' pillar.pk %}">{% csrf_token %}<label>Method<select name="scoring_method">{% for value,label in scoring_choices %}<option value="{{ value }}" {% if pillar.scoring_method == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label><label>Method notes<textarea name="scoring_notes" rows="3">{{ pillar.scoring_notes }}</textarea></label><button class="chip-btn" type="submit">Save measurement approach</button></form></article>
+  <article class="card"><h3>Block missions</h3>{% for mission in missions %}<div class="list-row"><span>Block {{ mission.block.number|stringformat:"02d" }} — {{ mission.block.name }}<small>{{ mission.mission|default:"Mission not configured." }}</small></span><a href="{% url 'block_detail' mission.block_id %}">Edit</a></div>{% endfor %}</article>
+</div>
+<article class="card section-gap"><h3>Ten-stage development path</h3>
+{% for stage in pillar.stages.all %}<details class="stage-editor"><summary><span class="timeline-number">{{ stage.number|stringformat:"02d" }}</span><strong>{{ stage.title }}</strong>{% if stage.completed_at %}<span class="tag">Completed {{ stage.completed_at }}</span>{% endif %}</summary><div class="grid grid-2 mission-content">
+  <form method="post" action="{% url 'save_stage' stage.pk %}">{% csrf_token %}{{ stage_forms|get_item:stage.pk }}<button class="primary-btn" type="submit">Save stage plan</button></form>
+  <div><h4>Historical stage reviews</h4>{% for review in stage.reviews.all %}<div class="review-snippet"><strong>{{ review.reviewed_at }}</strong><p>{{ review.evaluation }}</p><p><b>Evidence:</b> {{ review.evidence }}</p><p><b>Lessons:</b> {{ review.lessons }}</p><p><b>Next:</b> {{ review.recommendations }}</p></div>{% empty %}<p class="muted">No review history recorded.</p>{% endfor %}
+  <details><summary>Add stage review</summary><form method="post" action="{% url 'save_stage_review' stage.pk %}">{% csrf_token %}{{ stage_reviews|get_item:stage.pk }}<button class="chip-btn" type="submit">Save review</button></form></details></div>
+</div></details>{% endfor %}
+</article>
+<article class="card section-gap"><h3>Targets</h3>{% for target in targets %}<div class="list-row"><span>{{ target.title }}{% if target.block %}<small>{{ target.block }}</small>{% endif %}</span><span>{% if target.progress_percent != None %}{{ target.progress_percent|floatformat:0 }}%{% else %}Not measured{% endif %}</span></div>{% empty %}<p class="empty-state">No targets for this pillar.</p>{% endfor %}</article>
+{% endblock %}

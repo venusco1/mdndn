@@ -1,0 +1,15 @@
+{% extends "lifeos/base.html" %}
+{% block content %}
+<header class="section-header"><div><p class="eyebrow">Reflect, assess evidence, adjust the plan</p><h2>Reviews</h2></div></header>
+<nav class="review-tabs" aria-label="Review type"><a class="{% if review_kind == 'weekly' %}active{% endif %}" href="{% url 'reviews' %}?kind=weekly">Weekly</a><a class="{% if review_kind == 'monthly' %}active{% endif %}" href="{% url 'reviews' %}?kind=monthly">Monthly</a><a class="{% if review_kind == 'block' %}active{% endif %}" href="{% url 'reviews' %}?kind=block">Block</a><a href="{% url 'today' %}#evening-reflection">Daily</a></nav>
+<div class="grid grid-2 section-gap">
+  <article class="card"><h3>{% if review_kind == 'weekly' %}Weekly review{% elif review_kind == 'monthly' %}Monthly review{% else %}Block review{% endif %}</h3><p class="muted">{% if review_kind == 'block' and active_block %}Evaluate Block {{ active_block.number|stringformat:"02d" }} target by target. Record evidence before completion.{% else %}Record this period's execution consistency separately from meaningful outcomes.{% endif %}</p>
+    <form method="post" action="{% url 'save_review' %}">{% csrf_token %}<input type="hidden" name="kind" value="{{ review_kind }}">
+      {% for field in review_form %}<label>{{ field.label }}{{ field }}{% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}{% for error in field.errors %}<span class="field-error">{{ error }}</span>{% endfor %}</label>{% endfor %}
+      <button class="primary-btn" type="submit">Save review</button>
+    </form>
+  </article>
+  <article class="card"><h3>Daily reflections</h3><p>Evening reflections are captured on the <a href="{% url 'today' %}">Today</a> page. No empty daily record is created until it is saved.</p>{% for entry in daily_reviews %}<div class="review-snippet"><strong>{{ entry.date }}</strong>{% if entry.mood %}<span class="tag">{{ entry.get_mood_display }}</span>{% endif %}<p>{{ entry.evening_reflection }}</p>{% if entry.wins %}<p><b>Win:</b> {{ entry.wins }}</p>{% endif %}</div>{% empty %}<p class="empty-state">No daily reflections yet.</p>{% endfor %}</article>
+</div>
+<article class="card section-gap"><h3>Previous weekly, monthly and block reviews</h3>{% for entry in review_history %}<details class="review-snippet"><summary>{{ entry.get_kind_display }} · {{ entry.period_start }} – {{ entry.period_end }}{% if entry.block %} · {{ entry.block }}{% endif %}</summary><p><b>Execution:</b> {{ entry.execution_consistency|default:"Not separately recorded" }}</p><p><b>Outcome:</b> {{ entry.outcome_progress|default:"Not separately recorded" }}</p><p><b>Wins:</b> {{ entry.wins }}</p><p><b>Lessons:</b> {{ entry.lessons_learned }}</p><p><b>Next steps:</b> {{ entry.next_recommendations }}</p></details>{% empty %}<p class="empty-state">No reviews recorded yet.</p>{% endfor %}</article>
+{% endblock %}

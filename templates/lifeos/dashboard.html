@@ -1,0 +1,18 @@
+{% extends "lifeos/base.html" %}
+{% block content %}
+<header class="section-header"><div><p class="eyebrow">System overview</p><h2>Dashboard</h2></div><a class="primary-btn" href="{% url 'today' %}">Go to Today</a></header>
+<div class="grid grid-4">
+  <article class="card metric"><span class="label">Blocks</span><strong>{{ blocks|length }}/10</strong><span class="small muted">Aligned across all pillars</span></article>
+  <article class="card metric"><span class="label">Pillars</span><strong>8</strong><span class="small muted">Ten stages each</span></article>
+  <article class="card metric"><span class="label">Open tasks</span><strong>{{ open_tasks|length }}</strong><span class="small muted">Active next actions</span></article>
+  <article class="card metric"><span class="label">Targets</span><strong>{{ current_targets|length }}</strong><span class="small muted">Explicitly created targets only</span></article>
+</div>
+<section class="grid grid-2 section-gap">
+  <article class="card"><div class="section-header"><h3>Current block</h3>{% if active_block %}<a href="{% url 'block_detail' active_block.pk %}">Workspace</a>{% endif %}</div>{% if active_block %}<p><strong>Block {{ active_block.number|stringformat:"02d" }} — {{ active_block.name }}</strong></p><p>{{ active_block.vision|default:"Vision not configured yet." }}</p><p class="muted">{{ active_block.start_date }} – {{ active_block.deadline }} · {{ block_day|default:"—" }}/{{ active_block.duration_days }} days</p>{% else %}<p class="empty-state">No block is currently active.</p>{% endif %}</article>
+  <article class="card"><div class="section-header"><h3>Master timeline</h3><a href="{% url 'vision' %}">Full timeline</a></div><p>{{ config.master_start }} – {{ config.master_deadline }} · {{ timeline.total_days }} days including both endpoints.</p><p class="muted">{{ timeline.before_days }} pre-block days · {{ timeline.block_days }} planned block days · {{ timeline.after_days }} transition days after the final block.</p><p>Unallocated time is visible; block dates are not silently stretched.</p></article>
+</section>
+<div class="grid grid-2 section-gap">
+  <article class="card"><div class="section-header"><h3>Next actions</h3><a href="{% url 'tasks' %}">All tasks</a></div>{% for task in open_tasks %}<div class="list-row"><span>{{ task.title }}{% if task.pillar %}<small>{{ task.pillar.name }}</small>{% endif %}</span>{% if task.due_date %}<span class="tag">{{ task.due_date }}</span>{% endif %}</div>{% empty %}<p class="empty-state">No open tasks have been added.</p>{% endfor %}</article>
+  <article class="card"><div class="section-header"><h3>Outcomes, not just activity</h3><a href="{% url 'progress' %}">Review progress</a></div>{% for target in current_targets %}<div class="list-row"><span>{{ target.title }}{% if target.pillar %}<small>{{ target.pillar.name }}</small>{% endif %}</span>{% if target.progress_percent != None %}<span>{{ target.progress_percent|floatformat:0 }}%</span>{% else %}<span class="muted">Not measured</span>{% endif %}</div>{% empty %}<p class="empty-state">No measurable targets yet. Progress remains unscored until you define a measure.</p>{% endfor %}</article>
+</div>
+{% endblock %}

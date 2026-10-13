@@ -1,8 +1,0 @@
-# Example redirects - add any API endpoints or pretty links here
-# Format: <from> <to> <status>
-
-/intex.html / 301
-/do.html / 301
-/portfolio-details.html / 301
-/service-details.html / 301
-/*    /index.html   200

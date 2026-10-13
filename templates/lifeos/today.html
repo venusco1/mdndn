@@ -1,0 +1,92 @@
+{% extends "lifeos/base.html" %}
+{% load lifeos_tags %}
+{% block content %}
+<header class="section-header">
+  <div><p class="eyebrow">Daily command center</p><h2>Today</h2></div>
+  {% if day_number %}<span class="badge">Vision day {{ day_number }} · {{ days_remaining }} days remaining</span>{% else %}
+    {% if today < config.master_start %}<span class="badge">Journey begins in {{ days_until_start }} days</span>{% else %}<span class="badge">Vision 30 timeline ended</span>{% endif %}
+  {% endif %}
+</header>
+<div class="grid grid-4">
+  <article class="card metric"><span class="label">Vision 30 day</span><strong>{% if day_number %}{{ day_number }}{% else %}—{% endif %}</strong><span class="small muted">of {{ timeline.total_days }} inclusive calendar days</span></article>
+  <article class="card metric"><span class="label">Days remaining</span><strong>{{ days_remaining }}</strong><span class="small muted">to {{ config.master_deadline }}</span></article>
+  <article class="card metric"><span class="label">Current block</span><strong>{% if active_block %}{{ active_block.number|stringformat:"02d" }}{% else %}—{% endif %}</strong><span class="small muted">{% if active_block %}{{ active_block.name }}{% else %}Transition period{% endif %}</span></article>
+  <article class="card metric"><span class="label">Execution consistency</span><strong>{% if execution_score != None %}{{ execution_score }}%{% else %}—{% endif %}</strong><span class="small muted">{% if execution_score != None %}{{ daily_entry_count }} planned/logged items{% else %}Log today's planned work first{% endif %}</span></article>
+</div>
+{% if active_block %}<p class="timeline-note">Block {{ active_block.number|stringformat:"02d" }} · Day {% if block_day %}{{ block_day }}{% else %}starts {{ active_block.start_date }}{% endif %} of {{ active_block.duration_days }} · Deadline {{ active_block.deadline }} · <a href="{% url 'block_detail' active_block.pk %}">Open block workspace</a></p>{% endif %}
+
+<div class="grid grid-2 section-gap">
+  <article class="card">
+    <div class="section-header"><div><p class="eyebrow">Focus</p><h3>Today's top priorities</h3></div></div>
+    <form class="compact-form priority-form" method="post" action="{% url 'save_daily_priority' %}">{% csrf_token %}
+      <label>Priority <select name="rank">{% for n in "123" %}<option value="{{ n }}">{{ n }}</option>{% endfor %}</select></label>
+      <label>What matters today?<input name="title" maxlength="180" required placeholder="One clear outcome"></label>
+      <button class="primary-btn" type="submit">Save priority</button>
+    </form>
+    {% for priority in priorities %}
+      <form class="list-row" method="post" action="{% url 'toggle_priority' priority.pk %}">{% csrf_token %}
+        <button class="check-button" type="submit" aria-label="Toggle priority {{ priority.rank }} completion">{% if priority.completed %}✓{% else %}○{% endif %}</button>
+        <span class="{% if priority.completed %}is-complete{% endif %}"><strong>{{ priority.rank }}.</strong> {{ priority.title }}</span>
+      </form>
+    {% empty %}<p class="empty-state">Choose up to three meaningful priorities. No sample priorities are prefilled.</p>{% endfor %}
+  </article>
+  <article class="card">
+    <div class="section-header"><div><p class="eyebrow">Execution</p><h3>Tasks due today</h3></div><a href="{% url 'tasks' %}">All tasks</a></div>
+    {% for task in tasks_due %}
+      <form class="list-row" method="post" action="{% url 'update_task' task.pk %}">{% csrf_token %}
+        <input type="hidden" name="next" value="today">
+        <input type="hidden" name="status" value="{% if task.status == 'completed' %}todo{% else %}completed{% endif %}">
+        <button class="check-button" type="submit" aria-label="Toggle {{ task.title }}">{% if task.status == 'completed' %}✓{% else %}○{% endif %}</button>
+        <span class="{% if task.status == 'completed' %}is-complete{% endif %}">{{ task.title }}{% if task.pillar %}<small>{{ task.pillar.name }}</small>{% endif %}</span>
+      </form>
+    {% empty %}<p class="empty-state">No tasks due today. Add a next action when you're ready.</p>{% endfor %}
+    {% if overdue_tasks %}<h4 class="subheading">Overdue · review and reschedule</h4>{% for task in overdue_tasks %}<div class="list-row"><span>{{ task.title }}</span><span class="tag high">{{ task.due_date }}</span></div>{% endfor %}{% endif %}
+  </article>
+</div>
+
+<article class="card section-gap">
+  <div class="section-header"><div><p class="eyebrow">Three to five minute check-in</p><h3>Eight-pillar daily check-in</h3></div><a href="{% url 'pillars' %}">Pillar stages</a></div>
+  <div class="pillars">
+  {% for pillar in pillars %}
+    {% with log=logs|get_item:pillar.pk %}
+    <form class="pillar-checkin" method="post" action="{% url 'save_pillar_daily' pillar.pk %}">{% csrf_token %}
+      <div class="pillar-checkin-heading"><strong>{{ pillar.name }}</strong><a href="{% url 'pillar_detail' pillar.pk %}">Stage {{ active_block.number|stringformat:"02d"|default:"01" }} →</a></div>
+      <label>Today's practice
+        <select name="status">
+          <option value="not_completed" {% if log.status == 'not_completed' or not log %}selected{% endif %}>Not completed</option>
+          <option value="partial" {% if log.status == 'partial' %}selected{% endif %}>Partially completed</option>
+          <option value="completed" {% if log.status == 'completed' %}selected{% endif %}>Completed</option>
+        </select>
+      </label>
+      <label>Brief note<input name="reflection" maxlength="500" value="{{ log.reflection|default:'' }}" placeholder="Optional"></label>
+      <label>Outcome evidence (optional)<input name="outcome_note" maxlength="500" value="{{ log.outcome_note|default:'' }}" placeholder="A result, not just an activity"></label>
+      <button class="chip-btn" type="submit">Save check-in</button>
+    </form>
+    {% endwith %}
+  {% endfor %}
+  </div>
+</article>
+
+<div class="grid grid-2 section-gap">
+  <article class="card">
+    <div class="section-header"><div><p class="eyebrow">Daily practices</p><h3>Habits</h3></div><a href="{% url 'habits' %}">Manage habits</a></div>
+    {% for habit in habits %}
+      <form class="list-row" method="post" action="{% url 'toggle_habit' habit.pk %}">{% csrf_token %}<input type="hidden" name="next" value="today">
+        <button class="check-button" type="submit" aria-label="Toggle {{ habit.title }}">{% if habit.pk in checked_habits %}✓{% else %}○{% endif %}</button>
+        <span>{{ habit.title }}{% if habit.pillar %}<small>{{ habit.pillar.name }}</small>{% endif %}</span>
+      </form>
+    {% empty %}<p class="empty-state">Create habits that support your current block. No sample habits are added.</p>{% endfor %}
+  </article>
+  <article class="card" id="evening-reflection">
+    <div class="section-header"><div><p class="eyebrow">Close the day</p><h3>Evening reflection</h3></div></div>
+    <form method="post" action="{% url 'save_daily_review' %}">{% csrf_token %}
+      {{ daily_review_form.non_field_errors }}
+      {% if config.enable_mood_energy %}<div class="form-grid"><label>{{ daily_review_form.mood.label }}{{ daily_review_form.mood }}</label><label>{{ daily_review_form.energy.label }}{{ daily_review_form.energy }}</label></div>{% endif %}
+      {{ daily_review_form.wins }}{{ daily_review_form.improvement }}{{ daily_review_form.evening_reflection }}
+      <button class="primary-btn" type="submit">Save reflection</button>
+    </form>
+    <p class="small muted">Execution consistency reflects completed planned actions. Meaningful outcome evidence is tracked separately.</p>
+  </article>
+</div>
+{% if active_missions %}<article class="card section-gap"><div class="section-header"><h3>Current block missions</h3><a href="{% url 'block_detail' active_missions.0.block_id %}">Open all eight</a></div><div class="grid grid-2">{% for mission in active_missions %}<div class="mission-summary"><strong>{{ mission.pillar.name }}</strong><p>{{ mission.mission|default:"Mission not written yet." }}</p><a href="{% url 'pillar_detail' mission.pillar_id %}">Stage {{ mission.stage.number|stringformat:"02d" }}</a></div>{% endfor %}</div></article>{% endif %}
+{% endblock %}

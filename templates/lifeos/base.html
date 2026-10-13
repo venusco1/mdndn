@@ -1,0 +1,66 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="{% if theme == 'light' %}#f3efe6{% else %}#0f0d0a{% endif %}">
+  <title>{{ page_title }} · {{ config.name }}</title>
+  <link rel="icon" href="{% static 'img/favicon.png' %}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=IBM+Plex+Mono:wght@400;500&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/lifeos-app.css' %}">
+  <link rel="stylesheet" href="{% static 'css/vision30.css' %}">
+</head>
+<body data-theme="{{ theme }}">
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <a class="brand brand-link" href="{% url 'today' %}">
+        <span class="brand-kicker">Personal development system</span>
+        <h1>Vision 30</h1>
+        <p>Plan with intention. Execute with steadiness. Review what changed.</p>
+      </a>
+      {% if active_block %}
+        <div class="sidebar-metric">
+          <div class="label">Active block</div>
+          <strong class="sidebar-block">Block {{ active_block.number|stringformat:"02d" }}</strong>
+          <div>{{ active_block.name }}</div>
+          {% if block_day %}<div class="small">Day {{ block_day }} of {{ active_block.duration_days }}</div>{% endif %}
+        </div>
+      {% endif %}
+      <div class="desktop-nav">{% include "lifeos/_navigation.html" %}</div>
+      <details class="mobile-nav">
+        <summary>Navigation</summary>
+        {% include "lifeos/_navigation.html" %}
+      </details>
+      <div class="sidebar-footer">
+        <a href="/admin/">Manage records</a>
+        <form method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="nav-logout" type="submit">Sign out</button></form>
+      </div>
+    </aside>
+    <main class="main-pane" id="main-content">
+      <header class="topbar">
+        <div class="meta">
+          <div class="eyebrow">{{ config.name }} · {{ today|date:"l, j F Y" }}</div>
+          <h2>{{ page_title }}</h2>
+        </div>
+        <div class="actions">
+          <a class="chip-btn" href="{% url 'export_backup' %}">Export backup</a>
+          <a class="chip-btn" href="{% url 'settings' %}">Settings</a>
+        </div>
+      </header>
+      {% if messages %}
+        <div class="messages" aria-live="polite">
+          {% for message in messages %}<p class="message {{ message.tags }}">{{ message }}</p>{% endfor %}
+        </div>
+      {% endif %}
+      <section class="page-content">
+        {% block content %}{% endblock %}
+      </section>
+      <footer class="site-footer">Your records stay in this app's database. Export a backup regularly.</footer>
+    </main>
+  </div>
+</body>
+</html>

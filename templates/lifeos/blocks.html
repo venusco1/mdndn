@@ -1,0 +1,11 @@
+{% extends "lifeos/base.html" %}
+{% block content %}
+<header class="section-header"><div><p class="eyebrow">All eight pillars advance together</p><h2>Blocks</h2></div><span class="badge">{{ blocks|length }} blocks · 100 days each</span></header>
+<p class="muted">Block deadlines count the start date as Day 01. The master deadline remains independent of block scheduling.</p>
+<div class="block-list">{% for block in blocks %}<article class="card block-card">
+  <div class="block-heading"><span class="timeline-number">{{ block.number|stringformat:"02d" }}</span><div><p class="eyebrow">{{ block.get_status_display }}</p><h3>{{ block.name }}</h3><p>{{ block.start_date }} — {{ block.deadline }} · {{ block.duration_days }} calendar days</p></div><a class="primary-btn" href="{% url 'block_detail' block.pk %}">Open workspace</a></div>
+  <p>{{ block.vision|default:"Vision not configured." }}</p><div class="pill-tags">{% for mission in block.pillar_missions.all %}<span class="tag">{{ mission.pillar.name }}</span>{% endfor %}</div>
+  <div class="list-row"><span>Targets</span><span>{{ block.targets.count }}</span><span>Milestones</span><span>{{ block.milestones.count }}</span></div>
+</article>{% empty %}<p class="empty-state">The Vision 30 framework has not been initialized. Run <code>python manage.py seed_vision30</code>.</p>{% endfor %}</div>
+<p class="timeline-note">Master window: {{ config.master_start }} – {{ config.master_deadline }}. Remaining transition days are displayed separately in <a href="{% url 'vision' %}">Vision 30</a>.</p>
+{% endblock %}

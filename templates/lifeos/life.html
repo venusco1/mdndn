@@ -1,0 +1,6 @@
+{% extends "lifeos/base.html" %}
+{% block content %}
+<header class="section-header"><div><p class="eyebrow">Your long-term direction</p><h2>Life</h2></div></header>
+<div class="grid grid-2"><article class="card"><p class="eyebrow">Vision 30</p><h3>{{ config.master_vision }}</h3><p>{{ config.master_start }} through {{ config.master_deadline }} · {{ timeline.total_days }} inclusive days.</p><a href="{% url 'vision' %}">View complete timeline →</a></article><article class="card"><h3>Life domains</h3><p>Each area has a distinct scoring method. A task completed is evidence of execution, not proof of an outcome.</p><a href="{% url 'pillars' %}">Explore eight pillars →</a></article></div>
+<article class="card section-gap"><h3>Development framework</h3><div class="grid grid-2">{% for pillar in pillars %}<div class="list-row"><span><strong>{{ pillar.name }}</strong><small>{{ pillar.get_scoring_method_display }}</small></span><a href="{% url 'pillar_detail' pillar.pk %}">10 stages →</a></div>{% endfor %}</div></article>
+{% endblock %}

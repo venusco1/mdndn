@@ -1,0 +1,13 @@
+{% extends "lifeos/base.html" %}
+{% block content %}
+<header class="section-header"><div><p class="eyebrow">Repeatable daily practices</p><h2>Habits</h2></div></header>
+<div class="grid grid-2">
+  <article class="card"><h3>Add a habit</h3><form method="post" action="{% url 'create_habit' %}">{% csrf_token %}{{ habit_form.as_p }}<button class="primary-btn" type="submit">Save habit</button></form></article>
+  <article class="card"><h3>Check in</h3><p>Checking off a habit records its completion for today. No streaks or activity are invented.</p><p><a href="{% url 'today' %}">Go to today's check-in →</a></p></article>
+</div>
+<article class="card section-gap"><h3>Your habits</h3>{% for habit in habits %}<div class="task-card">
+  <form method="post" action="{% url 'toggle_habit' habit.pk %}">{% csrf_token %}<input type="hidden" name="next" value="habits"><button class="check-button" type="submit" aria-label="Toggle {{ habit.title }}">{% if habit.pk in checked_habits %}✓{% else %}○{% endif %}</button></form>
+  <span>{{ habit.title }}<small>{% if habit.pillar %}{{ habit.pillar.name }} · {% endif %}{% if habit.active %}Active{% else %}Paused{% endif %} · {{ habit.checkins.count }} recorded check-ins</small></span>
+  <form method="post" action="{% url 'delete_record' 'habit' habit.pk %}">{% csrf_token %}<input type="hidden" name="next" value="habits"><button class="danger-btn" type="submit">Delete</button></form>
+</div>{% empty %}<p class="empty-state">No habits created yet.</p>{% endfor %}</article>
+{% endblock %}

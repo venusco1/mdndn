@@ -1,0 +1,12 @@
+{% extends "lifeos/base.html" %}
+{% block content %}
+<header class="section-header"><div><p class="eyebrow">Direction and timeline</p><h2>{{ config.name }}</h2></div></header>
+<article class="card vision-card"><p class="eyebrow">Master vision</p><p>{{ config.master_vision }}</p><div class="timeline-range"><strong>{{ config.master_start }}</strong><span>→</span><strong>{{ config.master_deadline }}</strong></div><p>{{ timeline.total_days }} inclusive days · {{ days_remaining }} days remaining {% if day_number %}· Day {{ day_number }}{% endif %}</p></article>
+<div class="grid grid-3 section-gap">
+  <article class="card metric"><span class="label">Before Block 01</span><strong>{{ timeline.before_days }}</strong><span class="small muted">Transition / setup days</span></article>
+  <article class="card metric"><span class="label">Planned block days</span><strong>{{ timeline.block_days }}</strong><span class="small muted">Ten blocks of 100 calendar days</span></article>
+  <article class="card metric"><span class="label">After Block 10</span><strong>{{ timeline.after_days }}</strong><span class="small muted">Transition / final review days</span></article>
+</div>
+<article class="card section-gap"><div class="section-header"><h3>Ten blocks, eight pillars at a time</h3><a href="{% url 'blocks' %}">Manage blocks</a></div><div class="timeline-list">{% for block in blocks %}<a class="timeline-item" href="{% url 'block_detail' block.pk %}"><span class="timeline-number">{{ block.number|stringformat:"02d" }}</span><span><strong>{{ block.name }}</strong><small>{{ block.start_date }} – {{ block.deadline }} · {{ block.duration_days }} days · {{ block.get_status_display }}</small></span><span class="muted">8 stages →</span></a>{% endfor %}</div><p class="muted">Block 10 ends {{ blocks.9.deadline }}. The 8 days through the master deadline remain reserved for transition and final review.</p></article>
+<article class="card section-gap"><h3>Permanent pillars</h3><div class="grid grid-2">{% for pillar in pillars %}<a class="list-row pillar-link" href="{% url 'pillar_detail' pillar.pk %}"><strong>{{ pillar.name }}</strong><span>10 stages →</span></a>{% endfor %}</div></article>
+{% endblock %}

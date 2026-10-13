@@ -1,0 +1,32 @@
+{% extends "lifeos/base.html" %}
+{% block content %}
+<header class="section-header"><div><p class="eyebrow">Outcome evidence, not activity proxies</p><h2>Progress</h2></div></header>
+<article class="card"><div class="section-header"><h3>Targets by pillar</h3><a class="primary-btn" href="{% url 'goals_tasks' %}">Add goal</a></div><p>Measures are kept in their chosen units and are not averaged into one misleading life score. Targets without values show as not measured.</p>
+{% for group in pillars_with_targets %}<details class="progress-pillar"><summary>{{ group.pillar.name }} <span class="tag">{{ group.targets|length }} targets</span></summary>{% for target in group.targets %}<div class="progress-target"><div class="section-header"><span>{{ target.title }}{% if target.block %}<small>{{ target.block }}</small>{% endif %}</span><span>{% if target.progress_percent != None %}{{ target.progress_percent|floatformat:0 }}%{% else %}Not measured{% endif %}</span></div>{% if target.progress_percent != None %}<div class="goal-progress" role="progressbar" aria-label="{{ target.title }} outcome progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ target.progress_percent|floatformat:0 }}"><span style="width:{{ target.progress_percent }}%"></span></div>{% endif %}<small>{{ target.current_value|default:"—" }} / {{ target.target_value|default:"—" }} {{ target.unit }} · {{ target.get_status_display }}{% if target.evidence %} · Evidence: {{ target.evidence }}{% endif %}</small></div>{% empty %}<p class="muted">No outcomes defined for this pillar.</p>{% endfor %}</details>{% endfor %}
+{% if not targets %}<p class="empty-state">No outcome targets have been defined. Add targets before interpreting progress.</p>{% endif %}</article>
+<article class="card section-gap"><h3>Goal outcomes</h3>{% for goal in goals %}<div class="progress-target"><div class="section-header"><span>{{ goal.title }}{% if goal.pillar %}<small>{{ goal.pillar.name }}</small>{% endif %}</span><span>{% if goal.progress_percent != None %}{{ goal.progress_percent|floatformat:0 }}%{% else %}Not measured{% endif %}</span></div>{% if goal.progress_percent != None %}<div class="goal-progress" role="progressbar" aria-label="{{ goal.title }} outcome progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ goal.progress_percent|floatformat:0 }}"><span style="width:{{ goal.progress_percent }}%"></span></div>{% endif %}<small>{{ goal.current|default:"—" }} / {{ goal.target|default:"—" }} {{ goal.unit }} · {% if goal.completed_at %}criteria reviewed {{ goal.completed_at }}{% else %}{{ goal.completion_criteria|default:"Completion criteria not set" }}{% endif %}</small></div>{% empty %}<p class="empty-state">No outcome goals have been set.</p>{% endfor %}</article>
+<article class="card section-gap" aria-labelledby="execution-history-heading">
+  <div class="section-header">
+    <div><h3 id="execution-history-heading">Execution consistency</h3><p class="muted">Daily completion of recorded plans and habits. This is activity consistency, not outcome progress.</p></div>
+  </div>
+  {% if current_execution_average != None or previous_execution_average != None %}
+  <div class="execution-trend" aria-label="Recent execution comparison">
+    {% if current_execution_average != None %}<p>Last 7 days: <strong>{{ current_execution_average|floatformat:1 }}%</strong> across {{ current_execution_count }} recorded day{{ current_execution_count|pluralize }}.</p>{% else %}<p>Last 7 days: no saved execution scores.</p>{% endif %}
+    {% if previous_execution_average != None %}<p>Previous 7 days: <strong>{{ previous_execution_average|floatformat:1 }}%</strong> across {{ previous_execution_count }} recorded day{{ previous_execution_count|pluralize }}.</p>{% endif %}
+    {% if execution_average_change != None %}<p>Change: <strong>{% if execution_average_change > 0 %}+{% endif %}{{ execution_average_change|floatformat:1 }} percentage points</strong>.</p>{% endif %}
+  </div>
+  {% else %}<p class="empty-state">No execution trend is available yet. Save a daily reflection on a day with planned actions or habits to record a score.</p>{% endif %}
+  {% if recent_execution %}
+  <ol class="execution-chart" aria-label="Recent saved daily execution scores">
+    {% for entry in recent_execution %}
+    <li>
+      <time datetime="{{ entry.date|date:'Y-m-d' }}">{{ entry.date|date:"M j" }}</time>
+      <div class="execution-bar" role="progressbar" aria-label="Execution consistency on {{ entry.date }}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ entry.execution_score|floatformat:0 }}"><span style="width:{{ entry.execution_score }}%"></span></div>
+      <strong>{{ entry.execution_score|floatformat:0 }}%</strong>
+    </li>
+    {% endfor %}
+  </ol>
+  {% endif %}
+</article>
+<div class="grid grid-2 section-gap"><article class="card"><h3>Execution records</h3>{% for entry in daily_entries %}<div class="list-row"><span>{{ entry.date }} · {% if entry.mood %}{{ entry.get_mood_display }}{% else %}Daily reflection{% endif %}</span><span>{% if entry.evening_reflection %}Reflection logged{% else %}—{% endif %}</span></div>{% empty %}<p class="empty-state">No daily execution reviews recorded yet.</p>{% endfor %}</article><article class="card"><h3>Review trail</h3>{% for review in reviews %}<div class="list-row"><span>{{ review.get_kind_display }} · {{ review.period_start }}{% if review.block %}<small>{{ review.block }}</small>{% endif %}</span><span>Review recorded</span></div>{% empty %}<p class="empty-state">No weekly, monthly or block reviews yet.</p>{% endfor %}</article></div>
+{% endblock %}

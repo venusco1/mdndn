@@ -1,26 +1,98 @@
-# MDNDN Life OS
+# Vision 30 — MDNDN Life OS
 
-A private, browser-based personal planning system. The read-only home page explains the vision, the dashboard is the action workspace for priorities, goals, tasks, habits, progress, journaling, and milestones, and the [User Guide](user-guide.html) explains the purpose and use of each feature.
+Vision 30 is a private, single-user Django application for planning, executing,
+reviewing, and preserving a personal development journey. It uses Django's
+authentication, SQLite persistence, accessible server-rendered forms, and the
+existing Life OS visual design. The static HTML site is retained as a read-only
+legacy reference; the Django application is the primary dashboard.
 
-## Run locally
+## Local setup
 
-Open `index.html` in a modern browser. Follow its Dashboard or User Guide links to move between pages. For deployment, build the static site and publish the contents of `dist/`:
+Python 3.10 or later is required. From the project directory:
 
-```sh
-npm run build
+```powershell
+py -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+python manage.py migrate
+python manage.py seed_vision30
+python manage.py createsuperuser
+python manage.py runserver
 ```
 
-The build copies all HTML pages and assets into `dist/` and generates the sitemap. Node.js 18 or later is required.
+Open <http://127.0.0.1:8000/> and sign in with the account created above. The
+first setup creates the editable eight-pillar, ten-block, 80-stage framework;
+it does **not** create example tasks, goals, habits, check-ins, or progress.
+Use `/admin/` to manage detailed records and accounts.
+The app defaults to a dark theme across the sign-in and Life OS pages; change
+the theme from **Settings** if you prefer the light palette.
 
-## Data and backups
+SQLite stores app records in `db.sqlite3` by default. Set `DJANGO_DB_PATH` to
+choose another database file. `DJANGO_TIME_ZONE` sets the initial timezone;
+the signed-in app's editable timezone preference takes effect on requests.
 
-Dashboard data is stored locally in the current browser and is not sent to a server or automatically synchronized to other devices. Use **Export** to download a JSON backup and **Import** to replace the local data with a backup. Keep exported files somewhere safe; clearing browser data removes the local copy. See the User Guide's [privacy and backups section](user-guide.html#data) before moving or clearing data.
+## Dates and blocks
 
-## Features
+The master journey runs inclusively from **6 October 2026** through **18 July
+2029** (1,017 calendar days). Block 01 starts **15 October 2026**; with its
+first day counted as Day 01, its 100th day is **22 January 2027**. Ten
+consecutive 100-day blocks end **10 July 2029**. The application keeps the
+9-day pre-block period and 8-day post-block transition visible; changing master
+dates does not silently rewrite saved block dates.
 
-- Overview with daily priorities, seven-pillar scorecard, life metrics, open tasks, and habit check-ins
-- Goals with categories, deadlines, target values, and progress updates
-- Tasks with priorities, due dates, completion, and deletion
-- Habits with daily check-ins and consecutive-day streaks
-- Progress summaries, journal entries, and a dated archive
-- Light/dark theme, quick-add menu, and JSON export/import
+Run `python manage.py seed_vision30` again to restore any missing framework
+records. The command is idempotent and does not overwrite edited framework
+content or create personal activity.
+
+## Daily use and measurements
+
+Today brings priorities, due tasks, eight pillar check-ins, habit completion,
+an optional mood/energy check, and an evening reflection together. Tasks and
+habits measure execution; target values, evidence, and reviews describe
+outcomes. Those measures remain separate. Each pillar has its own selectable
+measurement approach rather than contributing to a universal life score.
+Saving an evening reflection records that day's execution snapshot when
+planned items exist. Progress shows saved scores and compares available
+recorded days in the current and preceding seven-day periods; empty days remain
+unscored rather than appearing as zero or being inferred later.
+
+Weekly, monthly, block, and stage reviews preserve wins, problems, missed
+commitments, evidence, lessons, and next actions. A target is not marked
+achieved merely because its numeric progress reaches the target; completion
+criteria and status are reviewed explicitly.
+
+## Existing browser data and backups
+
+The former static dashboard used browser `localStorage`; Django cannot read
+that browser storage automatically. In the old dashboard, choose **Export** to
+download its JSON file. In the Django app, open **Settings** and import that
+file. Import validates the content, leaves the source unchanged, preserves
+existing personal records, and recognizes an exact file already imported to
+prevent duplicate imports. A complete Vision 30 backup updates matching
+framework plans and settings. The older dashboard shipped with example goals,
+activity, and scores when no local backup existed; review a legacy JSON file
+and remove any placeholders before importing. Legacy scores become historical
+practice check-ins only; no missing pillar history or outcome progress is
+inferred.
+
+**Export backup** downloads the complete framework and personal records as
+JSON. Keep backups in a private location. Django records persist in SQLite
+across browser reloads and sessions.
+
+## Security and deployment
+
+The app requires a Django login. Create and manage users with `createsuperuser`
+or `/admin/`. For a private deployment, set a unique `DJANGO_SECRET_KEY`,
+`DJANGO_DEBUG=0`, and an explicit `DJANGO_ALLOWED_HOSTS`; serve over HTTPS and
+protect database and backup files. Do not expose Django's development server
+directly to the public internet.
+
+## Tests
+
+```powershell
+python manage.py test lifeos
+python manage.py check
+```
+
+The test suite exercises the inclusive timeline, seed idempotency, login
+protection, daily workflow, reviews, and backup import/export.

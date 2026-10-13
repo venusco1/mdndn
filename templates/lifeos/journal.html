@@ -1,0 +1,9 @@
+{% extends "lifeos/base.html" %}
+{% block content %}
+<header class="section-header"><div><p class="eyebrow">Private notes, reflections and decisions</p><h2>Journal</h2></div></header>
+<div class="grid grid-2">
+  <article class="card"><h3>Write an entry</h3><form method="post" action="{% url 'create_journal' %}">{% csrf_token %}{{ journal_form.as_p }}<button class="primary-btn" type="submit">Save entry</button></form></article>
+  <article class="card"><h3>Reflection prompts</h3><ul><li>What mattered today?</li><li>What evidence shows progress?</li><li>What decision or adjustment should I remember?</li></ul><p class="muted">Daily reflections can also be saved from Today.</p></article>
+</div>
+<div class="journal-list section-gap">{% for entry in entries %}<article class="journal-item"><div class="section-header"><div><span class="eyebrow">{{ entry.date }}{% if entry.pillar %} · {{ entry.pillar.name }}{% endif %}</span><h3>{{ entry.title|default:"Reflection" }}</h3></div>{% if entry.mood %}<span class="badge">{{ entry.mood }}</span>{% endif %}</div><p>{{ entry.text|linebreaksbr }}</p>{% if entry.decision %}<p><strong>Decision:</strong> {{ entry.decision }}</p>{% endif %}<form method="post" action="{% url 'delete_record' 'journal' entry.pk %}">{% csrf_token %}<input type="hidden" name="next" value="journal"><button class="danger-btn" type="submit">Delete</button></form></article>{% empty %}<p class="empty-state">Your journal is empty.</p>{% endfor %}</div>
+{% endblock %}

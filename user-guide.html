@@ -1,148 +1,191 @@
-<!DOCTYPE html>
+{% load static %}
+<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0f0d0a">
   <meta name="robots" content="noindex, nofollow">
-  <meta name="theme-color" content="#0e0d0a">
-  <title>User Guide — MDNDN Life OS</title>
-  <meta name="description" content="A practical user manual for understanding and using the MDNDN Life OS personal planning dashboard.">
-  <link rel="icon" href="assets/img/favicon.png">
+  <meta name="description" content="A practical guide to using the Vision 30 Life OS pages, plans, daily tools, reviews, and backups.">
+  <title>User guide · Vision 30</title>
+  <link rel="icon" href="{% static 'img/favicon.png' %}">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=IBM+Plex+Mono:wght@400;500&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
-  <link href="assets/css/lifeos.css" rel="stylesheet">
-  <link href="assets/css/user-guide.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=IBM+Plex+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/lifeos-app.css' %}">
+  <link rel="stylesheet" href="{% static 'css/public-pages.css' %}">
 </head>
-<body class="lifeos">
+<body class="public-page guide-page">
   <a class="skip-link" href="#guide-content">Skip to the guide</a>
-  <div class="guide-shell">
-    <header class="guide-topbar">
-      <a class="guide-brand" href="index.html"><span>MDNDN</span><small>Life OS · User manual</small></a>
-      <nav aria-label="Page links">
-        <a class="btn ghost" href="index.html">Read home</a>
-        <a class="btn solid" href="dashboard.html">Open dashboard</a>
+  <header class="public-header">
+    <a class="public-brand" href="{% url 'home' %}" aria-label="Vision 30 home">
+      <span class="public-brand-mark" aria-hidden="true">V30</span>
+      <span><strong>Vision 30</strong><small>Personal Life OS</small></span>
+    </a>
+    <nav class="public-nav" aria-label="Main navigation">
+      <a href="{% url 'home' %}">Home</a>
+      <a href="#guide-content">Guide contents</a>
+      <a href="{% url 'user_manual' %}">Detailed manual</a>
+      <a class="public-nav-cta" href="{% if user.is_authenticated %}{% url 'today' %}{% else %}{% url 'login' %}{% endif %}">
+        {% if user.is_authenticated %}Open Today{% else %}Sign in{% endif %}
+      </a>
+    </nav>
+  </header>
+
+  <main class="guide-layout" id="guide-content">
+    <aside class="guide-sidebar" aria-label="Guide chapters">
+      <p class="public-eyebrow">IN THIS GUIDE</p>
+      <nav>
+        <a href="#start">01 · Getting started</a>
+        <a href="#workflow">02 · A simple workflow</a>
+        <a href="#pages">03 · Every page</a>
+        <a href="#daily">04 · Daily check-in</a>
+        <a href="#reviews">05 · Reviews and progress</a>
+        <a href="#data">06 · Records and backups</a>
+        <a href="#privacy">07 · Privacy and access</a>
+        <a href="#mobile">08 · Phone and tablet</a>
+        <a href="#troubleshooting">09 · Troubleshooting</a>
       </nav>
-    </header>
+      <a class="guide-sidebar-home" href="{% url 'home' %}">← Back to home</a>
+    </aside>
 
-    <main class="guide-content" id="guide-content">
-      <p class="kicker">USER MANUAL · START HERE</p>
-      <h1 class="section-title">A clear system for turning a life vision into daily action.</h1>
-      <p class="guide-lede">This guide explains what MDNDN Life OS is for, how its dashboard works, how to make a useful daily and weekly routine, and where your information is stored.</p>
-
-      <div class="guide-callout">
-        <strong>In one sentence</strong>
-        <p>Use the reading page to remember the direction; use the dashboard to plan, act, record progress, and review what happened.</p>
-      </div>
-
-      <nav class="guide-toc" aria-label="Guide contents">
-        <a href="#purpose">Purpose</a>
-        <a href="#start">Start using it</a>
-        <a href="#dashboard">Dashboard views</a>
-        <a href="#routine">Suggested routine</a>
-        <a href="#data">Privacy and backups</a>
-        <a href="#limits">What it does not do</a>
-        <a href="#help">Troubleshooting</a>
-      </nav>
-
-      <section class="guide-section" id="purpose">
-        <p class="kicker">01 · PURPOSE</p>
-        <h2>What problem does this project solve?</h2>
-        <p>Long-term intentions are easy to forget when the day gets busy. This project puts personal direction, measurable goals, next actions, repeatable habits, and regular reflection in one place. It helps turn “I want to improve” into something that can be planned, done, and reviewed.</p>
-        <div class="guide-grid">
-          <article class="guide-card"><h3>Direction</h3><p>The home page is a reading space for identity, values, vision, life stages, and the age-30 deadline. It is not the place where you record daily work.</p></article>
-          <article class="guide-card"><h3>Execution</h3><p>The dashboard is the working space: priorities, tasks, goals, habits, daily scores, journal entries, and an archive of milestones.</p></article>
-          <article class="guide-card"><h3>Review</h3><p>Progress views make patterns easier to notice so you can adjust the plan instead of relying on memory or motivation alone.</p></article>
-        </div>
-        <p class="guide-note">This is a personal planning and reflection tool, not financial, medical, religious, or mental-health advice. Adapt the system to your own circumstances.</p>
-      </section>
+    <article class="guide-article">
+      <header class="guide-hero">
+        <p class="public-eyebrow">PRACTICAL USER MANUAL</p>
+        <h1>A clear guide to your Life OS.</h1>
+        <p class="guide-lede">Learn what each workspace does, how to start without over-planning, and how to keep your records safe. The system works best when you use only the parts that help.</p>
+        <div class="guide-callout"><strong>The short version</strong><p>Plan a direction, choose the next useful action, record what happened, then adjust your plan using evidence—not guilt or guesswork.</p></div>
+        <a class="guide-detail-link" href="{% url 'user_manual' %}"><span><strong>Want the complete walkthrough?</strong><small>Open the detailed manual for page-by-page explanations, examples, and feature instructions.</small></span><span aria-hidden="true">→</span></a>
+      </header>
 
       <section class="guide-section" id="start">
-        <p class="kicker">02 · FIRST SESSION</p>
-        <h2>Start in five steps</h2>
+        <p class="public-eyebrow">01 · GETTING STARTED</p>
+        <h2>Set up your workspace first</h2>
         <ol class="guide-steps">
-          <li><strong>Read the home page.</strong> Start at <a href="index.html">index.html</a> to understand the vision and the reasons behind the system.</li>
-          <li><strong>Open Overview.</strong> Go to the <a href="dashboard.html">dashboard</a>. It opens on Overview and shows your current snapshot.</li>
-          <li><strong>Make the Big 3 yours.</strong> Replace the example priorities with up to three outcomes that matter today, then save them.</li>
-          <li><strong>Use your own records.</strong> Create or edit goals, tasks, and habits. The initial dashboard includes sample records so you can see how each view works; replace or delete them as you personalize the app.</li>
-          <li><strong>Export a backup.</strong> After entering information you want to keep, use Export and store the downloaded JSON file somewhere safe.</li>
+          <li><strong>Sign in with your account.</strong> This site has no public self-registration. The first account is created securely by the site owner; do not share your credentials.</li>
+          <li><strong>Start on Today.</strong> Review the date and timeline, add up to three priorities, and keep them achievable.</li>
+          <li><strong>Check your framework.</strong> Use Vision 30, Blocks, and Pillars to understand the existing plan. Edit framework details only when you intend to change the plan.</li>
+          <li><strong>Add your own actions.</strong> Use Goals &amp; Tasks for outcomes and next steps, then Habits for repeatable practices. No sample activity is required.</li>
+          <li><strong>Protect your records.</strong> Visit Settings and download a backup after entering information you want to keep. Store that file somewhere private.</li>
         </ol>
+        <div class="guide-callout guide-callout-soft"><strong>First-time account setup</strong><p>The site owner initializes the database and creates the first superuser outside the website. Once your account exists, sign in from the <a href="{% url 'login' %}">login page</a>. Do not try to create accounts through the app; it has no public registration form.</p></div>
       </section>
 
-      <section class="guide-section" id="dashboard">
-        <p class="kicker">03 · DASHBOARD REFERENCE</p>
-        <h2>What each view is for</h2>
-        <div class="guide-reference">
-          <article><h3>Overview</h3><p>At-a-glance life metrics, your Big 3, the daily seven-pillar score, open tasks, and habits. Update priorities and log pillar scores here. A daily score is up to 14 points: choose 0 (not done), 1 (partial), or 2 (completed) for each pillar.</p></article>
-          <article><h3>Goals</h3><p>Create a goal with a title, category, pillar, target, optional unit and deadline. Enter a non-negative current value and a positive target. Use the progress field and Update button as your measure changes; Delete removes a goal.</p></article>
-          <article><h3>Tasks</h3><p>Add a next action, choose its priority and optional due date, then tick its checkbox when complete. The checkbox can mark a task complete or reopen it. Delete removes it.</p></article>
-          <article><h3>Habits</h3><p>Add a repeatable behavior, then mark it done for today. Marking it again removes today’s check-in. A streak is a run of consecutive calendar days; if you miss a day, the current run ends, while the best run remains.</p></article>
-          <article><h3>Progress</h3><p>Review the current score and averages across days with recorded scores. Pillar totals are based on the recorded score history. Updating a pillar score on Overview records or updates today’s entry.</p></article>
-          <article><h3>Life</h3><p>Read the fixed life vision, mission stages, and age-30 scorecard. Birth date and milestone dates are currently project settings, not editable profile fields.</p></article>
-          <article><h3>Journal</h3><p>Choose a mood and save a reflection. Entries are dated on the day you save them and shown newest first. Delete an entry to remove it.</p></article>
-          <article><h3>Archive</h3><p>Save achievements, reviews, milestones, and memories with a date and optional notes. This is a manually curated record; it does not automatically move completed tasks into the archive.</p></article>
+      <section class="guide-section" id="workflow">
+        <p class="public-eyebrow">02 · A SIMPLE WORKFLOW</p>
+        <h2>Use a small loop you can repeat</h2>
+        <div class="guide-card-grid">
+          <article class="guide-card"><span class="guide-card-number">01</span><h3>Orient</h3><p>Revisit your vision or active block when you need context. You do not need to reread the whole plan every day.</p></article>
+          <article class="guide-card"><span class="guide-card-number">02</span><h3>Choose</h3><p>Pick a few meaningful priorities and turn them into clear tasks. A task should describe an action you can actually take.</p></article>
+          <article class="guide-card"><span class="guide-card-number">03</span><h3>Record</h3><p>Mark finished tasks and habits, then save a short daily check-in or reflection when it is useful.</p></article>
+          <article class="guide-card"><span class="guide-card-number">04</span><h3>Review</h3><p>Look for evidence and patterns. Keep what works, reschedule what still matters, and remove commitments that no longer fit.</p></article>
         </div>
-        <h3 class="guide-subheading">Global controls</h3>
-        <ul>
-          <li><strong>Quick actions (+):</strong> choose a record type to open its dashboard view and focus the first input.</li>
-          <li><strong>Theme:</strong> switch between light and dark. The selected theme is saved in this browser.</li>
-          <li><strong>Read home / User guide:</strong> return to the vision page or this manual without losing saved entries.</li>
-        </ul>
+        <p class="guide-note">A missed day is information, not a verdict. Honest, occasional use is more valuable than maintaining a perfect-looking score.</p>
       </section>
 
-      <section class="guide-section" id="routine">
-        <p class="kicker">04 · A PRACTICAL ROUTINE</p>
-        <h2>Use the system without making it another burden</h2>
-        <div class="guide-grid">
-          <article class="guide-card"><h3>Morning · 3–5 minutes</h3><p>Read the direction if needed. Choose a realistic Big 3, check the task list, and decide which habits you intend to complete.</p></article>
-          <article class="guide-card"><h3>During the day</h3><p>Work from the task list. Mark a habit when it is done. Update goal progress when you have a meaningful new measurement—not just to keep the screen busy.</p></article>
-          <article class="guide-card"><h3>Evening · 5 minutes</h3><p>Score each pillar honestly, write a brief journal entry if useful, and note one adjustment for tomorrow. A partial score is useful information, not a failure.</p></article>
-          <article class="guide-card"><h3>Weekly · 15 minutes</h3><p>Review completed work, open tasks, goal movement, habit consistency, and journal notes. Keep what worked, remove stale commitments, and choose next week’s focus.</p></article>
+      <section class="guide-section" id="pages">
+        <p class="public-eyebrow">03 · PAGE REFERENCE</p>
+        <h2>What each workspace is for</h2>
+        <div class="page-reference">
+          <article id="page-today"><span class="page-tag">DAILY</span><h3><a href="{% url 'today' %}">Today</a></h3><p>Your daily workspace: priorities, tasks due today, overdue tasks, eight-pillar check-ins, habits, and an optional evening reflection. Save only what you actually want to record.</p></article>
+          <article id="page-dashboard"><span class="page-tag">OVERVIEW</span><h3><a href="{% url 'dashboard' %}">Dashboard</a></h3><p>A high-level snapshot of the framework, active block, timeline, open tasks, and explicitly created measurable targets. It is a summary, not a replacement for the working pages.</p></article>
+          <article><span class="page-tag">DIRECTION</span><h3><a href="{% url 'vision' %}">Vision 30</a></h3><p>See the overall timeline, master vision, and how the block period fits within the wider date range. Unallocated days and transition time remain visible.</p></article>
+          <article><span class="page-tag">PLANNING</span><h3><a href="{% url 'blocks' %}">Blocks</a></h3><p>Work with the ten planned blocks, their dates, missions, objectives, targets, milestones, and reviews. Open a block to edit its plan and related work.</p></article>
+          <article><span class="page-tag">DEVELOPMENT</span><h3><a href="{% url 'pillars' %}">Pillars</a></h3><p>Explore the eight life areas and their staged work. A pillar can use qualitative evidence, numeric targets, consistency, or a custom scoring approach; there is no single universal life score.</p></article>
+          <article><span class="page-tag">OUTCOMES</span><h3><a href="{% url 'goals_tasks' %}">Goals &amp; Tasks</a></h3><p>Connect desired outcomes to practical next actions. Use a goal for a result you are working toward and a task for a specific action.</p></article>
+          <article><span class="page-tag">ACTIONS</span><h3><a href="{% url 'tasks' %}">Tasks</a></h3><p>Create and manage tasks with a status, priority, optional due date, and relevant pillar, block, or goal. Mark a task complete when it is done; update or reschedule it when plans change.</p></article>
+          <article><span class="page-tag">PRACTICE</span><h3><a href="{% url 'habits' %}">Habits</a></h3><p>Track repeatable practices. Mark a habit for the current day; toggling it again removes that day's check-in. Streaks reflect consecutive recorded days, not personal worth.</p></article>
+          <article><span class="page-tag">CONTEXT</span><h3><a href="{% url 'life' %}">Life</a></h3><p>Read the broader life vision, mission stages, and scorecard context. It helps explain the system's direction alongside the editable planning workspaces.</p></article>
+          <article><span class="page-tag">REFLECTION</span><h3><a href="{% url 'reviews' %}">Reviews</a></h3><p>Save weekly, monthly, or block reviews. Capture wins, challenges, lessons, execution consistency, outcome progress, and next recommendations. Daily reflections are on Today.</p></article>
+          <article><span class="page-tag">NOTES</span><h3><a href="{% url 'journal' %}">Journal</a></h3><p>Save dated journal entries and optional mood, decision, or pillar details. Entries are private account records; write only what you are comfortable keeping here.</p></article>
+          <article><span class="page-tag">EVIDENCE</span><h3><a href="{% url 'progress' %}">Progress</a></h3><p>Review recorded execution and outcome measures over time. An empty day is not treated as a zero score, and activity is not the same as an outcome.</p></article>
+          <article><span class="page-tag">MEMORY</span><h3><a href="{% url 'archive' %}">Archive</a></h3><p>Manually preserve milestones, memories, or other records you want to find later. Completed tasks are not automatically moved here.</p></article>
+          <article><span class="page-tag">PREFERENCES</span><h3><a href="{% url 'settings' %}">Settings</a></h3><p>Adjust dates and preferences, choose a theme, manage mood/energy options, and export or import a JSON backup. Date changes do not silently rewrite existing block dates.</p></article>
         </div>
-        <p class="guide-note">Keep your scores and goals honest. The dashboard is most useful as a feedback loop, not as a contest to reach a perfect score.</p>
+        <p class="guide-note">These workspace links are protected. If you are signed out, Django takes you to the login page and returns you to the requested page after successful sign-in.</p>
+      </section>
+
+      <section class="guide-section" id="daily">
+        <p class="public-eyebrow">04 · DAILY CHECK-IN</p>
+        <h2>A practical start-to-finish session</h2>
+        <div class="guide-timeline">
+          <article><span>START</span><div><h3>Choose priorities</h3><p>Add up to three priorities on Today. Use a short outcome or focus, not a long to-do list. Saving the same rank updates that slot for the day.</p></div></article>
+          <article><span>DO</span><div><h3>Work from the action list</h3><p>Create tasks with a clear next action, status, and optional due date. Tasks due today and overdue incomplete tasks are surfaced on Today.</p></div></article>
+          <article><span>PRACTICE</span><div><h3>Check in across the pillars</h3><p>For each active pillar, record whether today's practice was completed, partial, or not completed. Optional notes can capture reflection and outcome evidence separately.</p></div></article>
+          <article><span>CLOSE</span><div><h3>Reflect without forcing a score</h3><p>Save a daily reflection, wins, and an improvement for tomorrow if useful. Mood and energy fields appear only when enabled in Settings.</p></div></article>
+        </div>
+      </section>
+
+      <section class="guide-section" id="reviews">
+        <p class="public-eyebrow">05 · REVIEWS AND PROGRESS</p>
+        <h2>Separate effort from outcomes</h2>
+        <div class="guide-two-column">
+          <article class="guide-panel"><h3>Execution consistency</h3><p>Captures whether planned actions were completed: tasks, habits, priorities, and daily practices. It helps you see how consistently you followed through.</p></article>
+          <article class="guide-panel"><h3>Outcome progress</h3><p>Uses goals, measurable targets, and evidence to describe results. Completing many actions does not automatically mean a goal was achieved.</p></article>
+        </div>
+        <p>Use weekly reviews to notice near-term patterns, monthly reviews to reconsider direction and commitments, and block reviews to evaluate the plan against evidence. Record recommendations you can act on next. A target is not marked achieved just because a number reaches its limit; review the completion criteria and evidence.</p>
       </section>
 
       <section class="guide-section" id="data">
-        <p class="kicker">05 · YOUR DATA</p>
-        <h2>Where information lives and how to protect it</h2>
-        <ul>
-          <li>Dashboard records are saved in this browser’s local storage on this device and for this site origin. They are not synced to an account or sent to a project database.</li>
-          <li>Another browser, device, or a different site address has a separate local copy. Use Export on the old browser and Import on the new one to transfer records.</li>
-          <li>Export downloads a JSON backup. The file contains your saved entries in readable form; keep it private and store it securely.</li>
-          <li>Import validates the backup and replaces the dashboard data currently stored in that browser. Export the current data first if you might need it. Cancel the confirmation to leave existing data unchanged.</li>
-          <li>Clear deletes the dashboard data in this browser. It cannot be undone; the app then returns to its built-in sample starting content.</li>
-          <li>Private browsing, clearing site data, browser storage limits, or browser policies may remove or prevent storage. Export regular backups for anything important.</li>
-        </ul>
-        <div class="guide-callout"><strong>Privacy reminder</strong><p>This is not an encrypted vault or a login-protected account. Anyone with access to this browser profile may be able to view the dashboard and its local data. Avoid storing passwords, payment details, or information you would not want exposed.</p></div>
-      </section>
-
-      <section class="guide-section" id="limits">
-        <p class="kicker">06 · EXPECTATIONS</p>
-        <h2>What this project does—and does not—do</h2>
-        <p>MDNDN Life OS is a browser-based personal organizer. It provides manual tracking and review, with local backup and restore. There is no account or server-side database.</p>
-        <ul>
-          <li>It does not send reminders, notifications, emails, calendar events, or recurring task alerts.</li>
-          <li>It does not sync between devices automatically or support multiple users and permissions.</li>
-          <li>It does not automatically calculate financial totals, verify goals, or move tasks into the archive.</li>
-          <li>Age and life-horizon metrics use the birth date and target dates configured in the app. Change the project settings/code if those dates are not appropriate for your use.</li>
-          <li>Example tasks, goals, scores, habits, and journal/archive records are starter examples—not real measurements. Review and replace them before using reports to make decisions.</li>
+        <p class="public-eyebrow">06 · RECORDS AND BACKUPS</p>
+        <h2>Keep your data portable and protected</h2>
+        <ul class="guide-list">
+          <li>Life OS records are stored in the site's configured database and associated with this deployment—not in browser-only local storage.</li>
+          <li>Sign in from another device to access the same account and database records. Use a trusted device and sign out on shared devices.</li>
+          <li>Settings can export a JSON backup containing framework and personal records. The download may contain sensitive diary entries; store it privately and securely.</li>
+          <li>Import validates a backup, preserves existing personal records, and avoids re-importing an identical file. A Vision 30 backup can update matching framework plans and settings. Review a file before importing it.</li>
+          <li>Legacy browser-dashboard data is not imported automatically. If you have an old export, review its contents and use the Settings import form only when you intend to bring those records into this database.</li>
+          <li>Render's ordinary local filesystem is not a durable media store. This app does not currently persist user-uploaded media files; backup import is processed as a submitted file and should not be treated as long-term file storage.</li>
         </ul>
       </section>
 
-      <section class="guide-section" id="help">
-        <p class="kicker">07 · TROUBLESHOOTING</p>
+      <section class="guide-section" id="privacy">
+        <p class="public-eyebrow">07 · PRIVACY AND ACCESS</p>
+        <h2>This is a private workspace, not a public journal</h2>
+        <p>The home and guide explain the product without showing diary records. Today, journal, dashboard, plans, reviews, archive, and settings are protected by the existing Django authentication system. The admin page also requires an authenticated admin account.</p>
+        <ul class="guide-list">
+          <li>There is no public account-registration page. The site owner creates accounts through the secure administrative process.</li>
+          <li>Never share your password, database URL, secret key, or backup file. Do not store passwords or payment-card details in journal entries.</li>
+          <li>Use the HTTPS site address, sign out from shared devices, and keep your password unique.</li>
+          <li>CSRF protection is enabled for forms. Do not disable browser security controls to work around a failed request.</li>
+        </ul>
+      </section>
+
+      <section class="guide-section" id="mobile">
+        <p class="public-eyebrow">08 · PHONE AND TABLET</p>
+        <h2>Use the same workspace on a smaller screen</h2>
+        <ul class="guide-list">
+          <li>Pages adapt to narrow screens; use the Navigation disclosure at the top of the signed-in app to reach its sections.</li>
+          <li>Forms stack into a simpler layout on smaller displays. Scroll within the page rather than zooming out to make a form fit.</li>
+          <li>Use the browser's normal text zoom and a current version of Safari, Chrome, or another standards-compliant browser.</li>
+          <li>Changes are saved by submitting the relevant form. Wait for the page confirmation before closing or navigating away.</li>
+        </ul>
+      </section>
+
+      <section class="guide-section" id="troubleshooting">
+        <p class="public-eyebrow">09 · TROUBLESHOOTING</p>
         <h2>Common questions</h2>
-        <details><summary>My data is missing on another device. Where did it go?</summary><p>Data is stored per browser and site origin, not in the cloud. Export from the original browser and import the JSON backup into the other one.</p></details>
-        <details><summary>The dashboard did not keep my change.</summary><p>Check that browser storage is enabled and that the browser is not in a restricted/private session. The app reports a save error if local storage rejects a change. Export important data regularly.</p></details>
-        <details><summary>How do I undo Clear?</summary><p>Clear cannot be undone from inside the app. If you previously exported a backup, use Import to restore it. Otherwise the removed local data cannot be recovered.</p></details>
-        <details><summary>Why are there already records in the dashboard?</summary><p>They are built-in sample records included to demonstrate how the views work. Delete or edit them as you set up your own workspace.</p></details>
-        <details><summary>Does Import merge data?</summary><p>No. Import replaces the saved dashboard state after confirmation. Export the current browser data first if you need to keep both copies.</p></details>
-        <div class="guide-footer-actions">
-          <a class="btn ghost" href="index.html">Back to the reading page</a>
-          <a class="btn solid" href="dashboard.html">Go to the dashboard</a>
+        <details class="guide-faq"><summary>I clicked a workspace link and got the login page.</summary><p>That is expected when signed out. Enter your account credentials; after a successful login the app should return you to the requested protected page.</p></details>
+        <details class="guide-faq"><summary>I cannot create an account from the login screen.</summary><p>Public registration is intentionally not provided. The site owner must create the first account securely; contact them if you do not have credentials.</p></details>
+        <details class="guide-faq"><summary>My older dashboard data is not here.</summary><p>The previous static dashboard used browser-local data. It is separate from this Django database. Export from the old dashboard if it is still available, inspect the file, then import through Settings if you want those entries here.</p></details>
+        <details class="guide-faq"><summary>Why is there no execution score for a day?</summary><p>Empty days are not inferred as failures. Record relevant daily work first; progress displays information from days with saved records.</p></details>
+        <details class="guide-faq"><summary>What should I do if a save fails?</summary><p>Keep the page open and note the error message. Check your connection and required fields, then retry once. For a repeated issue, contact the site owner with the page name and approximate time—never send a password or database URL.</p></details>
+        <div class="guide-final">
+          <div><p class="public-eyebrow">READY WHEN YOU ARE</p><h2>Choose one useful next step.</h2></div>
+          <div class="hero-actions">
+            <a class="public-button public-button-secondary" href="{% url 'user_manual' %}">Read detailed manual</a>
+            <a class="public-button public-button-primary" href="{% if user.is_authenticated %}{% url 'today' %}{% else %}{% url 'login' %}{% endif %}">{% if user.is_authenticated %}Open Today{% else %}Sign in{% endif %}<span aria-hidden="true">→</span></a>
+            <a class="public-button public-button-secondary" href="{% url 'home' %}">Return to home</a>
+          </div>
         </div>
       </section>
-    </main>
-  </div>
+    </article>
+  </main>
+
+  <footer class="public-footer">
+    <a class="public-brand" href="{% url 'home' %}"><span class="public-brand-mark" aria-hidden="true">V30</span><span><strong>Vision 30</strong><small>Personal Life OS</small></span></a>
+    <p>Use the system as a support—not another source of pressure.</p>
+    <a href="#guide-content">Back to top ↑</a>
+  </footer>
 </body>
 </html>

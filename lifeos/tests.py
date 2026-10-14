@@ -130,6 +130,29 @@ class LifeOSWorkflowTests(TestCase):
     def setUp(self):
         self.client.force_login(self.user)
 
+    def test_read_only_home_and_user_guide_are_public(self):
+        self.client.logout()
+
+        home = self.client.get(reverse("home"))
+        self.assertEqual(home.status_code, 200)
+        self.assertContains(home, "Build a life with")
+        self.assertContains(home, reverse("user_guide"))
+
+        guide = self.client.get(reverse("user_guide"))
+        self.assertEqual(guide.status_code, 200)
+        self.assertContains(guide, "What each workspace is for")
+        self.assertContains(guide, reverse("today"))
+
+        detailed_manual = self.client.get(reverse("user_manual"))
+        self.assertEqual(detailed_manual.status_code, 200)
+        self.assertContains(detailed_manual, "Know what every part does")
+        self.assertContains(detailed_manual, reverse("settings"))
+        self.assertContains(detailed_manual, "Example goal")
+
+        private_page = self.client.get(reverse("today"))
+        self.assertEqual(private_page.status_code, 302)
+        self.assertIn(reverse("login"), private_page.url)
+
     def test_app_requires_login_and_renders_every_primary_page(self):
         self.client.logout()
         response = self.client.get(reverse("today"))

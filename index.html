@@ -1,1248 +1,149 @@
-<!DOCTYPE html>
+{% load static %}
+<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MDNDN Life OS — Personal Diary</title>
-  <meta name="description" content="Operating system and diary of MDNDN. Age-30 mission: 18 July 2029. Build the man first.">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0f0d0a">
   <meta name="robots" content="noindex, nofollow">
-  <meta name="theme-color" content="#0e0d0a">
-  <link rel="icon" href="assets/img/favicon.png">
+  <meta name="description" content="A private personal system for planning meaningful work, building steady habits, and reviewing progress.">
+  <title>Vision 30 · Life OS</title>
+  <link rel="icon" href="{% static 'img/favicon.png' %}">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=IBM+Plex+Mono:wght@400;500&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
-  <link href="assets/css/lifeos.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=IBM+Plex+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/lifeos-app.css' %}">
+  <link rel="stylesheet" href="{% static 'css/public-pages.css' %}">
 </head>
-<body class="lifeos">
-  <a class="skip-link" href="#about-me">Skip to main content</a>
-  <div class="os-shell">
-    <aside class="os-sidebar" id="sidebar">
-      <div class="brand">
-        <span class="mark">Life OS</span>
-        <h1>MDNDN</h1>
-        <p>Diary of a man being built.<br>DOB 18 July 1999 · Age 30 on 18 July 2029</p>
-      </div>
-      <nav aria-label="Main navigation">
-        <ul class="nav-list">
-          <li><a href="dashboard.html"><span class="num">00</span> Dashboard</a></li>
-          <li><a href="#about-me"><span class="num">01</span> Home</a></li>
-          <li><a href="#profile-description"><span class="num">02</span> About Me</a></li>
-          <li><a href="#clock"><span class="num">03</span> Life clock</a></li>
-          <li><a href="#vision"><span class="num">04</span> My Vision</a></li>
-          <li><a href="#deadline"><span class="num">05</span> Vision Deadline</a></li>
-          <li><a href="#vision-pillars"><span class="num">06</span> 8 Pillars</a></li>
-          <li><a href="user-guide.html"><span class="num">07</span> User Guide</a></li>
-          <!-- <li><a href="#stages"><span class="num">07</span> Mission Stages</a></li>
-          <li><a href="#daily"><span class="num">08</span> Daily Control</a></li>
-          <li><a href="#night"><span class="num">09</span> Evening Review</a></li>
-          <li><a href="#weekly"><span class="num">10</span> Weekly Review</a></li>
-          <li><a href="#monthly"><span class="num">11</span> Monthly Review</a></li>
-          <li><a href="#scorecard"><span class="num">12</span> Age-30 Scorecard</a></li>
-          <li><a href="#equation"><span class="num">13</span> Data Backup</a></li>
-          <li><a href="#targets"><span class="num">14</span> Raw Answers</a></li> -->
-        </ul>
-      </nav>
-      <div class="sidebar-meter">
-        <div class="label">Days remaining to 30</div>
-        <strong id="sidebar-days">—</strong>
-        <div class="bar" role="progressbar" aria-label="Mission timeline" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i id="sidebar-bar"></i></div>
-      </div>
-    </aside>
-    <button class="nav-backdrop" id="nav-backdrop" type="button" aria-label="Close navigation" tabindex="-1"></button>
+<body class="public-page">
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  <header class="public-header">
+    <a class="public-brand" href="{% url 'home' %}" aria-label="Vision 30 home">
+      <span class="public-brand-mark" aria-hidden="true">V30</span>
+      <span><strong>Vision 30</strong><small>Personal Life OS</small></span>
+    </a>
+    <nav class="public-nav" aria-label="Main navigation">
+      <a href="#system">The system</a>
+      <a href="#pillars">Eight areas</a>
+      <a href="{% url 'user_guide' %}">User guide</a>
+      <a class="public-nav-cta" href="{% if user.is_authenticated %}{% url 'today' %}{% else %}{% url 'login' %}{% endif %}">
+        {% if user.is_authenticated %}Open Today{% else %}Sign in{% endif %}
+      </a>
+    </nav>
+  </header>
 
-    <div class="os-main">
-      <header class="os-topbar">
-        <button class="menu-toggle" id="menu-toggle" type="button" aria-label="Open menu" aria-controls="sidebar" aria-expanded="false">Menu</button>
-        <div class="live">
-          <span>NOW <b id="live-now">—</b></span>
-          <span>AGE <b id="live-age">—</b></span>
-          <span>TO 30 <b id="live-to30">—</b></span>
-          <span class="storage-note">Diary saved on this device</span>
+  <main id="main-content" class="public-main">
+    <section class="home-hero" aria-labelledby="home-title">
+      <div class="hero-copy">
+        <p class="public-eyebrow"><span class="status-dot"></span> A private space for intentional progress</p>
+        <h1 id="home-title">Build a life with <em>direction.</em></h1>
+        <p class="hero-lede">Vision 30 brings long-term plans and everyday practice into one calm workspace. Choose what matters, take the next step, and make time to learn from it.</p>
+        <div class="hero-actions">
+          <a class="public-button public-button-primary" href="{% if user.is_authenticated %}{% url 'today' %}{% else %}{% url 'login' %}{% endif %}">
+            {% if user.is_authenticated %}Continue to Today{% else %}Sign in to your workspace{% endif %}<span aria-hidden="true">→</span>
+          </a>
+          <a class="public-button public-button-secondary" href="{% url 'user_guide' %}">Explore the user guide</a>
         </div>
-      </header>
-
-      <main class="os-content" id="main-content">
-        <p class="app-status" id="app-status" role="status" aria-live="polite"></p>
-
-        <section id="about-me">
-          <p class="kicker">01 — About Me</p>
-          <h2 class="section-title">About Me</h2>
-
-          <div class="about-me-block">
-
-            <div class="profile-header">
-              <div class="profile-info">
-                <h2>Muhammed Nezamudheen</h2>
-                <p class="profile-subtitle">
-                  Founder · Entrepreneur · Software Developer · Digital Marketer: A technology-driven entrepreneur focused on building businesses, digital systems and a disciplined life with long-term purpose.
-                </p>
-              </div>
-            </div>
-
-            <div class="personal-details">
-              <div class="detail-item">
-                <span class="detail-label">Full Name</span>
-                <span class="detail-value">Muhammed Nezamudheen</span>
-              </div>
-
-              <div class="detail-item">
-                <span class="detail-label">Date of Birth</span>
-                <span class="detail-value">18 July 1999</span>
-              </div>
-
-              <div class="detail-item">
-                <span class="detail-label">Age</span>
-                <span class="detail-value" id="current-age">27</span>
-              </div>
-
-              <div class="detail-item">
-                <span class="detail-label">From</span>
-                <span class="detail-value">
-                  Elamkulam, Perinthalmanna, Malappuram, Kerala
-                </span>
-              </div>
-
-              <div class="detail-item">
-                <span class="detail-label">Country</span>
-                <span class="detail-value">India</span>
-              </div>
-
-              <div class="detail-item">
-                <span class="detail-label">Profession</span>
-                <span class="detail-value">
-                  Founder · Entrepreneur · Software Developer · Digital Marketer
-                </span>
-              </div>
-
-              <div class="detail-item">
-                <span class="detail-label">Company</span>
-                <span class="detail-value">VenusCo</span>
-              </div>
-
-              <div class="detail-item">
-                <span class="detail-label">Business</span>
-                <span class="detail-value">VenusCo Tech Solutions, Harcheez Online Store</span>
-              </div>
-            </div>
-
-            <div class="profile-description" id="profile-description">
-              <h3>Who I Am</h3>
-
-              <p>
-                I'm Muhammed Nezamudheen, a founder, website developer, digital marketer and entrepreneur from India.
-                My professional  journey is built around technology, digital business and entrepreneurship.<br>  I work on building websites and digital systems, developing businesses and using digital marketing to create measurable growth.
-                <br>I am not building my career only to earn an income. I want to develop the knowledge, skills, discipline, judgement and leadership required to build something meaningful and sustainable over the long term.
-              </p>
-
-              <p>
-                I am building my professional life through technology, digital business, entrepreneurship and continuous personal
-                development. My work focuses on building businesses, developing websites and digital systems, and helping
-                businesses grow through digital marketing.
-              </p>
-
-              <p>
-                I am currently in a foundation-building phase of my life. My focus is not only on professional success, but also on
-                becoming a stronger, more disciplined, responsible and capable person.
-              </p>
-            </div>
-
-            <div class="current-phase">
-              <h3>Current Life Phase</h3>
-              <p>
-                <strong>Foundation Building:</strong><span style="color: #ddd2bb;"> I am building the foundation for the next stage of my life:
-                mentally, physically, spiritually, financially,
-                professionally and personally.</span>
-              </p>
-            </div>
-
-            <div class="direction-block">
-              <h3>My Direction</h3>
-              <p class="quote"> Build the man first. Build the life second. Build the legacy third. </p>
-            </div>
-          </div>
-        </section>
-
-
-        <hr class="rule">
-        
-        <section id="clock">
-
-          <p class="kicker">02 — LIFE CLOCK</p>
-
-          <h2 class="section-title">My Life Clock</h2>
-
-          <p class="lede">
-            My life is finite, measurable and already in motion.
-            This clock records the time I have lived, the time I have remaining
-            within my first 60-year horizon, and the responsibility I have for
-            using that time intentionally.
-          </p>
-
-
-          <!-- LIFE HORIZON -->
-
-          <div class="life-clock-card">
-
-            <div class="life-clock-header">
-
-              <div>
-                <span class="clock-label">60-YEAR LIFE HORIZON</span>
-
-                <h3>
-                  18 July 1999
-                  <span class="arrow">→</span>
-                  18 July 2059
-                </h3>
-
-                <p>
-                  From birth to my 60th year.
-                  Every day between these two dates is part of my first major
-                  life horizon.
-                </p>
-              </div>
-
-              <div class="clock-status">
-                <span class="status-label">CURRENT DATE</span>
-                <strong id="clock-today">—</strong>
-              </div>
-
-            </div>
-
-
-            <div class="life-clock-main">
-
-              <!-- RING -->
-
-              <div class="ring-container">
-
-                <div
-                  class="ring"
-                  id="life-ring"
-                  style="--p: 0"
-                  role="img"
-                  aria-label="Life horizon progress"
-                >
-                  <div class="ring-content">
-                    <span id="clock-pct">0%</span>
-                    <small>completed</small>
-                  </div>
-                </div>
-
-              </div>
-
-
-              <!-- CURRENT POSITION -->
-
-              <div class="clock-summary">
-
-                <span class="clock-label">MY CURRENT POSITION</span>
-
-                <h3 id="clock-age">
-                  —
-                </h3>
-
-                <p class="age-description">
-                  Time lived since 18 July 1999.
-                </p>
-
-
-                <div class="clock-stats">
-
-                  <div class="stat">
-                    <div class="lbl">Days lived</div>
-                    <div class="val" id="clock-days-lived">—</div>
-                  </div>
-
-                  <div class="stat">
-                    <div class="lbl">Weeks lived</div>
-                    <div class="val" id="clock-weeks-lived">—</div>
-                  </div>
-
-                  <div class="stat">
-                    <div class="lbl">Months lived</div>
-                    <div class="val" id="clock-months-lived">—</div>
-                  </div>
-
-                  <div class="stat">
-                    <div class="lbl">Years lived</div>
-                    <div class="val" id="clock-years-lived">—</div>
-                  </div>
-
-                </div>
-
-              </div>
-
-            </div>
-
-          </div>
-
-
-          <!-- LIFE REMAINING -->
-
-          <div class="life-remaining panel">
-
-            <div class="remaining-header">
-
-              <div>
-                <span class="clock-label">THE TIME AHEAD</span>
-
-                <h3>
-                  Life Remaining Until 60
-                </h3>
-
-                <p>
-                  18 July 2029 is my age-30 milestone.
-                  18 July 2059 marks the end of my first 60-year horizon.
-                </p>
-              </div>
-
-              <div class="remaining-date">
-                <span>HORIZON END</span>
-                <strong>18 JULY 2059</strong>
-              </div>
-
-            </div>
-
-
-            <div class="remaining-grid">
-
-              <div class="stat">
-                <div class="lbl">Remaining</div>
-                <div class="val" id="clock-remain-ymd">—</div>
-              </div>
-
-              <div class="stat">
-                <div class="lbl">Days</div>
-                <div class="val" id="clock-remain-days">—</div>
-              </div>
-
-              <div class="stat">
-                <div class="lbl">Weeks</div>
-                <div class="val" id="clock-remain-weeks">—</div>
-              </div>
-
-              <div class="stat">
-                <div class="lbl">Months</div>
-                <div class="val" id="clock-remain-months">—</div>
-              </div>
-
-            </div>
-
-          </div>
-
-
-          <!-- IMPORTANT MILESTONES -->
-
-          <div class="life-milestones">
-
-            <div class="milestone">
-
-              <span class="milestone-number">01</span>
-
-              <div>
-                <span class="milestone-label">AGE 30</span>
-
-                <h4>Foundation Deadline</h4>
-
-                <p>
-                  18 July 2029 — the completion point of my Project 30
-                  foundation-building phase.
-                </p>
-              </div>
-
-              <strong id="clock-days-to-30">—</strong>
-
-            </div>
-
-
-            <div class="milestone">
-
-              <span class="milestone-number">02</span>
-
-              <div>
-                <span class="milestone-label">AGE 40</span>
-
-                <h4>Expansion Phase</h4>
-
-                <p>
-                  18 July 2039 — a future stage built upon the foundation
-                  created during my twenties and thirties.
-                </p>
-              </div>
-
-            </div>
-
-
-            <div class="milestone">
-
-              <span class="milestone-number">03</span>
-
-              <div>
-                <span class="milestone-label">AGE 60</span>
-
-                <h4>First Major Life Horizon</h4>
-
-                <p>
-                  18 July 2059 — the end of this first 60-year life horizon.
-                </p>
-              </div>
-
-            </div>
-
-          </div>
-
-
-          <!-- LIFE PRINCIPLE -->
-
-          <div class="life-clock-principle">
-
-            <span class="clock-label">LIFE PRINCIPLE</span>
-
-            <p>
-              I cannot create more time.
-              I can only decide how I use the time I have been given.
-            </p>
-
-            <span class="principle-caption">
-              Every day is part of the life I am building.
-            </span>
-
-          </div>
-
-        </section>
-
-
-        <hr class="rule">
-
-        <section id="vision">
-
-          <!-- SECTION HEADER -->
-          <div class="vision-heading">
-            <p class="kicker">03 — MY VISION</p>
-
-            <h2 class="section-title">
-              My Vision
-            </h2>
-
-            <p class="lede">
-              A vision defines the direction of this chapter of my life.<br>
-              It is not a prediction of my entire future, nor is it a list
-              of short-term tasks. <br>It is the standard of life I am intentionally
-              working toward between now and my 30th birthday.
-            </p>
-          </div>
-
-
-          <!-- ACTIVE VISION -->
-          <div class="vision-hero">
-
-            <div class="vision-hero-top">
-
-              <div>
-                <span class="vision-label">ACTIVE LIVE VISION</span>
-
-                <div class="vision-period">
-                  <span>AGE 27</span>
-                  <span class="vision-arrow">→</span>
-                  <span>AGE 30</span>
-                </div>
-              </div>
-
-              <div class="vision-deadline">
-                <span>DEADLINE</span>
-                <strong>18 JULY 2029</strong>
-              </div>
-
-            </div>
-
-
-            <div class="vision-hero-content">
-
-              <h3>18 July 2029 is the first major milestone of my life.</h3>
-
-              <div class="vision-hero-copy">
-
-                <p>
-                  Between 6 October 2026 and 18 July 2029, my primary vision
-                  is to build a strong foundation for the next stage of my life.
-                </p>
-
-                <p>
-                  I want to become mentally stronger, physically healthier,
-                  spiritually grounded, financially well stable, professionally
-                  capable, disciplined in my daily life and more responsible
-                  in my relationships and decisions.
-                </p>
-
-                <p>
-                  These years are not simply a period of waiting for age 30.
-                  They are a period of deliberate construction. I will develop
-                  the systems, habits, knowledge, skills, financial strength
-                  and character required to create a stable and sustainable life.
-                </p>
-
-              </div>
-
-            </div>
-
-
-            <div class="vision-hero-footer">
-
-              <div>
-                <span>VISION STATUS</span>
-                <strong>ACTIVE</strong>
-              </div>
-
-              <div>
-                <span>CURRENT PHASE</span>
-                <strong>FOUNDATION BUILDING</strong>
-              </div>
-
-              <div>
-                <span>NEXT REVIEW</span>
-                <strong>AGE 30</strong>
-              </div>
-
-            </div>
-
-          </div>
-
-
-          <!-- VISION AREAS -->
-          <div class="vision-areas" id="vision-pillars">
-
-            <div class="vision-block-header">
-
-              <div>
-                <span class="vision-label">
-                  THE VISION PILLARS
-                </span>
-
-                <h3>What I Want to Build by 30</h3>
-              </div>
-
-              <p>
-                Eight areas of development that together define
-                the foundation I want to establish during this chapter.
-              </p>
-
-            </div>
-
-
-            <div class="vision-grid">
-
-
-              <!-- 01 -->
-              <article class="vision-item">
-
-                <div class="vision-item-top">
-                  <span class="vision-number">01</span>
-                  <span class="vision-icon">MIND</span>
-                </div>
-
-                <h4>Mind & Intelligence</h4>
-
-                <p>
-                  Develop stronger thinking, broader knowledge, emotional
-                  control, sound judgement, decision-making ability and
-                  mental resilience.
-                </p>
-
-              </article>
-
-
-              <!-- 02 -->
-              <article class="vision-item">
-
-                <div class="vision-item-top">
-                  <span class="vision-number">02</span>
-                  <span class="vision-icon">BODY</span>
-                </div>
-
-                <h4>Physical Health</h4>
-
-                <p>
-                  Build a healthy, energetic and physically capable body
-                  through exercise, proper nutrition, recovery and
-                  consistent physical discipline.
-                </p>
-
-              </article>
-
-
-              <!-- 03 -->
-              <article class="vision-item">
-
-                <div class="vision-item-top">
-                  <span class="vision-number">03</span>
-                  <span class="vision-icon">FAITH</span>
-                </div>
-
-                <h4>Islamic & Spiritual Life</h4>
-
-                <p>
-                  Strengthen my relationship with Allah and develop a
-                  consistent, disciplined and meaningful spiritual life
-                  that guides my decisions and character.
-                </p>
-
-              </article>
-
-
-              <!-- 04 -->
-              <article class="vision-item">
-
-                <div class="vision-item-top">
-                  <span class="vision-number">04</span>
-                  <span class="vision-icon">MONEY</span>
-                </div>
-
-                <h4>Financial Stability</h4>
-
-                <p>
-                  Build stable income, responsible financial management,
-                  savings, reduced financial pressure and the ability to
-                  handle my responsibilities with confidence.
-                </p>
-
-              </article>
-
-
-              <!-- 05 -->
-              <article class="vision-item">
-
-                <div class="vision-item-top">
-                  <span class="vision-number">05</span>
-                  <span class="vision-icon">WORK</span>
-                </div>
-
-                <h4>Business & Professional Life</h4>
-
-                <p>
-                  Become significantly more capable as a website developer,
-                  digital marketer, founder and business operator while
-                  building valuable and sustainable work.
-                </p>
-
-              </article>
-
-
-              <!-- 06 -->
-              <article class="vision-item">
-
-                <div class="vision-item-top">
-                  <span class="vision-number">06</span>
-                  <span class="vision-icon">CHARACTER</span>
-                </div>
-
-                <h4>Character & Discipline</h4>
-
-                <p>
-                  Become more disciplined, reliable, responsible, patient
-                  and consistent, with greater alignment between my words,
-                  decisions and actions.
-                </p>
-
-              </article>
-
-
-              <!-- 07 -->
-              <article class="vision-item">
-
-                <div class="vision-item-top">
-                  <span class="vision-number">07</span>
-                  <span class="vision-icon">FAMILY</span>
-                </div>
-
-                <h4>Family & Relationships</h4>
-
-                <p>
-                  Build stronger relationships and become a dependable
-                  husband, family member and person whose presence creates
-                  trust, stability and responsibility.
-                </p>
-
-              </article>
-
-
-              <!-- 08 -->
-              <article class="vision-item">
-
-                <div class="vision-item-top">
-                  <span class="vision-number">08</span>
-                  <span class="vision-icon">GROWTH</span>
-                </div>
-
-                <h4>Personal Development</h4>
-
-                <p>
-                  Build better habits, systems, knowledge and life-management
-                  skills that allow me to continuously improve and handle
-                  greater responsibilities.
-                </p>
-
-              </article>
-
-            </div>
-
-          </div>
-
-
-          <!-- COMPLETION -->
-          <div class="vision-completion">
-
-            <div class="completion-date">
-
-              <span class="vision-label">
-                VISION END
-              </span>
-
-              <strong>18</strong>
-              <span>JULY</span>
-              <span>2029</span>
-
-            </div>
-
-
-            <div class="completion-content">
-
-              <span class="vision-label">
-                WHEN THIS CHAPTER ENDS
-              </span>
-
-              <h3>
-                Stop. Review. Reassess. Begin again.
-              </h3>
-
-              <p>
-                When I reach 30, I will not automatically continue this
-                vision. I will stop and examine the person I have become,
-                the life I have built, the results I achieved, the failures
-                I experienced and the lessons I learned.
-              </p>
-
-              <p>
-                I will then define the next vision according to the reality
-                of my life at that time.
-              </p>
-
-            </div>
-
-          </div>
-
-
-          <!-- VISION RULE -->
-          <div class="vision-rule">
-
-            <span class="vision-label">
-              MY VISION RULE
-            </span>
-
-            <p class="quote" style="color: #ddd2bb;">
-              Build the current chapter well.
-              The next chapter will be written when its time comes.
-            </p>
-
-            <span class="vision-rule-caption">
-              Short-term clarity. Long-term direction. Continuous reassessment.
-            </span>
-
-          </div>
-
-        </section>
-
-        <hr class="rule">
-
-        <section id="deadline">
-
-          <p class="kicker">04 — MAJOR DEADLINE</p>
-
-          <h2 class="section-title">The Vision Deadline</h2>
-
-          <p class="lede">
-            18 July 2029 is the defining deadline of my current life chapter.
-            It marks the point at which I will stop, review what I have built,
-            measure who I have become and decide what the next chapter requires.
-          </p>
-
-
-          <!-- DEADLINE HERO -->
-
-          <div class="deadline-hero" id="deadline-card">
-
-            <div class="deadline-top">
-
-              <div>
-                <span class="deadline-label">
-                  THE ACTIVE VISION · FINAL DEADLINE
-                </span>
-
-                <h3>
-                  18 July 2029
-                </h3>
-
-                <p>
-                  My 30th birthday
-                </p>
-              </div>
-
-
-              <div class="deadline-age">
-
-                <span>AGE</span>
-
-                <strong>30</strong>
-
-                <small>YEARS</small>
-
-              </div>
-
-            </div>
-
-
-            <!-- COUNTDOWN -->
-
-            <div class="deadline-countdown">
-
-              <div class="countdown-intro">
-
-                <span class="deadline-label">
-                  TIME REMAINING
-                </span>
-
-                <p>
-                  Every remaining day is part of the foundation-building
-                  period between age 27 and age 30.
-                </p>
-
-              </div>
-
-
-              <div class="countdown-grid">
-
-                <div class="countdown-stat">
-
-                  <span class="countdown-label">
-                    YEARS
-                  </span>
-
-                  <strong id="deadline-years">
-                    —
-                  </strong>
-
-                </div>
-
-
-                <div class="countdown-stat">
-
-                  <span class="countdown-label">
-                    MONTHS
-                  </span>
-
-                  <strong id="deadline-months">
-                    —
-                  </strong>
-
-                </div>
-
-
-                <div class="countdown-stat">
-
-                  <span class="countdown-label">
-                    DAYS
-                  </span>
-
-                  <strong id="deadline-days">
-                    —
-                  </strong>
-
-                </div>
-
-
-                <div class="countdown-stat">
-
-                  <span class="countdown-label">
-                    TOTAL DAYS
-                  </span>
-
-                  <strong id="deadline-total-days">
-                    —
-                  </strong>
-
-                </div>
-
-              </div>
-
-            </div>
-
-
-            <!-- DATE INFORMATION -->
-
-            <div class="deadline-meta">
-
-              <div>
-                <span>START OF PROJECT 30</span>
-                <strong>06 OCTOBER 2026</strong>
-              </div>
-
-              <div>
-                <span>DEADLINE</span>
-                <strong>18 JULY 2029</strong>
-              </div>
-
-              <div>
-                <span>MISSION WINDOW</span>
-                <strong id="deadline-window">—</strong>
-              </div>
-
-            </div>
-
-          </div>
-
-
-          <!-- WHAT THE DEADLINE MEANS -->
-
-          <div class="deadline-purpose">
-
-            <div class="deadline-purpose-header">
-
-              <span class="deadline-label">
-                WHAT THIS DEADLINE MEANS
-              </span>
-
-              <h3>
-                A foundation deadline, not a finish line.
-              </h3>
-
-            </div>
-
-
-            <div class="deadline-purpose-content">
-
-              <p>
-                I am not expecting to have a perfect life by the age of 30.
-                I am using 30 as a defined point by which I want to have
-                built a strong foundation for the rest of my life.
-              </p>
-
-              <p>
-                By this deadline, I want meaningful progress across my mind,
-                physical health, faith, finances, character, relationships,
-                personal development and professional life.
-              </p>
-
-              <p>
-                The objective is to become a person who is stronger,
-                more disciplined, more capable and more responsible than
-                the person who began this journey at 27.
-              </p>
-
-            </div>
-
-          </div>
-
-
-          <!-- THE THREE PHASES -->
-
-          <div class="deadline-phases">
-
-            <span class="deadline-label">
-              PROJECT 30 STRUCTURE
-            </span>
-
-            <div class="phase-grid">
-
-              <div class="phase">
-
-                <span class="phase-number">01</span>
-
-                <span class="phase-period">
-                  2026 → 2027
-                </span>
-
-                <h4>Foundation</h4>
-
-                <p>
-                  Establish the essential routines, disciplines, systems
-                  and habits required for sustainable progress.
-                </p>
-
-              </div>
-
-
-              <div class="phase">
-
-                <span class="phase-number">02</span>
-
-                <span class="phase-period">
-                  2027 → 2028
-                </span>
-
-                <h4>Development</h4>
-
-                <p>
-                  Strengthen capabilities, improve results and turn the
-                  foundations into measurable personal and professional growth.
-                </p>
-
-              </div>
-
-
-              <div class="phase">
-
-                <span class="phase-number">03</span>
-
-                <span class="phase-period">
-                  2028 → 2029
-                </span>
-
-                <h4>Consolidation</h4>
-
-                <p>
-                  Strengthen what works, correct what does not, remove
-                  weaknesses and prepare for the next stage of life.
-                </p>
-
-              </div>
-
-            </div>
-
-          </div>
-
-
-          <!-- FINAL REVIEW -->
-
-          <div class="deadline-review">
-
-            <div class="review-mark">
-              30
-            </div>
-
-            <div>
-
-              <span class="deadline-label">
-                ON 18 JULY 2029
-              </span>
-
-              <h3>
-                I will stop and review.
-              </h3>
-
-              <p>
-                I will compare the person I am with the person I intended
-                to become. I will review the results, failures, habits,
-                relationships, finances, health, faith, professional growth
-                and lessons of the previous years.
-              </p>
-
-              <p>
-                Then I will decide what deserves to become the vision
-                for the next chapter.
-              </p>
-
-            </div>
-
-          </div>
-
-
-          <!-- DEADLINE PRINCIPLE -->
-
-          <div class="deadline-principle">
-
-            <span class="deadline-label">
-              DEADLINE PRINCIPLE
-            </span>
-
-            <p class="quote">
-              “The deadline is not where my life ends.
-              It is where I measure what I have built.”
-            </p>
-
-          </div>
-
-        </section>
-
-        <!-- <hr class="rule">
-
-        <section id="daily">
-          <p class="kicker">07 — Daily control system</p>
-          <h2 class="section-title">Every day, record</h2>
-          <div class="panel" id="daily-panel">
-            <div class="grid-4">
-              <div class="stat"><div class="lbl">Date</div><div class="val" id="daily-date">—</div></div>
-              <div class="stat"><div class="lbl">Age</div><div class="val" id="daily-age">—</div></div>
-              <div class="stat"><div class="lbl">Days lived</div><div class="val" id="daily-lived">—</div></div>
-              <div class="stat"><div class="lbl">To 30 / To 60</div><div class="val"><span id="daily-to30">—</span> / <span id="daily-to60">—</span></div></div>
-            </div>
-            <h3 style="margin-top:22px">Today’s Big 3</h3>
-            <p class="notice">Only three major priorities.</p>
-            <div class="grid-3" style="margin-top:12px">
-              <label class="field">1 <input id="big1" type="text" placeholder="e.g. Complete client project"></label>
-              <label class="field">2 <input id="big2" type="text" placeholder="e.g. 30-minute exercise"></label>
-              <label class="field">3 <input id="big3" type="text" placeholder="e.g. Follow up 50 leads"></label>
-            </div>
-            <h3 style="margin-top:22px">During the day — seven pillars</h3>
-            <div id="pillar-track"></div>
-          </div>
-        </section>
-
-        <hr class="rule">
-
-        <section id="night">
-          <p class="kicker">08 — Nightly score</p>
-          <h2 class="section-title">0 failed · 1 partial · 2 completed</h2>
-          <p class="lede">Maximum 14 points/day. Daily score = total ÷ 14 × 100. Do not obsess over 100%. The objective is consistency.</p>
-          <div class="panel">
-            <div id="night-scores"></div>
-            <div class="stat" style="margin-top:16px">
-              <div class="lbl">Daily score</div>
-              <div class="val" id="night-total">— / 14</div>
-            </div>
-            <h3 style="margin-top:22px">Recent scored days</h3>
-            <div class="history" id="score-history"></div>
-          </div>
-        </section>
-
-        <hr class="rule">
-
-        <section id="weekly">
-          <p class="kicker">09 — Weekly control</p>
-          <h2 class="section-title">Performance and numbers</h2>
-          <p class="lede">Week <strong id="week-key">—</strong>. Saved on this device.</p>
-          <div class="panel" id="weekly-panel">
-            <div class="grid-2">
-              <label class="field">What did I accomplish?<textarea id="w-q1"></textarea></label>
-              <label class="field">What did I fail to accomplish?<textarea id="w-q2"></textarea></label>
-              <label class="field">Why did I fail?<textarea id="w-q3"></textarea></label>
-              <label class="field">What wasted my time?<textarea id="w-q4"></textarea></label>
-              <label class="field">What created the most value?<textarea id="w-q5"></textarea></label>
-              <label class="field">What problem appeared?<textarea id="w-q6"></textarea></label>
-            </div>
-            <label class="field" style="margin-top:12px">What must change next week?<textarea id="w-q7"></textarea></label>
-            <h3 style="margin-top:22px">Numbers</h3>
-            <div class="grid-4">
-              <label class="field">Income <input id="w-income" type="text"></label>
-              <label class="field">Expenses <input id="w-expenses" type="text"></label>
-              <label class="field">Savings <input id="w-savings" type="text"></label>
-              <label class="field">Debt <input id="w-debt" type="text"></label>
-              <label class="field">Business revenue <input id="w-revenue" type="text"></label>
-              <label class="field">Business profit <input id="w-profit" type="text"></label>
-              <label class="field">Leads <input id="w-leads" type="text"></label>
-              <label class="field">Sales <input id="w-sales" type="text"></label>
-              <label class="field">Exercise sessions <input id="w-exercise" type="text"></label>
-              <label class="field">Learning hours <input id="w-learning" type="text"></label>
-              <label class="field">Spiritual consistency <input id="w-spiritual" type="text"></label>
-              <label class="field">Sleep <input id="w-sleep" type="text"></label>
-            </div>
-          </div>
-        </section>
-
-        <hr class="rule">
-
-        <section id="monthly">
-          <p class="kicker">10 — Monthly review</p>
-          <h2 class="section-title">Life scorecard</h2>
-          <p class="lede">Month <strong id="month-key">—</strong>. If I repeated this month 12 times, would I become the man I want to be at 30? If no, change the system immediately.</p>
-          <div class="panel" id="monthly-panel">
-            <div class="grid-4">
-              <label class="field">Mental /100 <input id="m-mental" type="number" min="0" max="100"></label>
-              <label class="field">Physical /100 <input id="m-physical" type="number" min="0" max="100"></label>
-              <label class="field">Spiritual /100 <input id="m-spiritual" type="number" min="0" max="100"></label>
-              <label class="field">Financial /100 <input id="m-financial" type="number" min="0" max="100"></label>
-              <label class="field">Personal Development /100 <input id="m-personal" type="number" min="0" max="100"></label>
-              <label class="field">Character &amp; Discipline /100 <input id="m-character" type="number" min="0" max="100"></label>
-              <label class="field">Business/Professional /100 <input id="m-business" type="number" min="0" max="100"></label>
-              <label class="field">Family /100 <input id="m-family" type="number" min="0" max="100"></label>
-            </div>
-            <div class="stat" style="margin-top:16px">
-              <div class="lbl">Overall average</div>
-              <div class="val" id="m-overall">—</div>
-            </div>
-            <label class="field" style="margin-top:16px">Would repeating this month 12 times make the 30-year-old man?<textarea id="m-note" placeholder="If the answer is no, write what must change."></textarea></label>
-          </div>
-        </section>
-
-        <hr class="rule">
-
-        <section id="scorecard">
-          <p class="kicker">11 — 30-year-old scorecard</p>
-          <h2 class="section-title">Measurable targets, not slogans</h2>
-          <p class="lede">Fill the blanks. They save on this device. Formal 18 July 2029 master targets come after the raw answers in section 15.</p>
-          <div class="panel">
-            <h3>Financial</h3>
-            <p>By 18 July 2029, I will have ₹ <input data-target="fin-income" type="text" style="width:140px" placeholder="_____"> monthly personal income, ₹ <input data-target="fin-savings" type="text" style="width:140px" placeholder="_____"> savings/investments, ₹ <input data-target="fin-rev" type="text" style="width:140px" placeholder="_____"> business revenue, and ₹0 uncontrolled debt.</p>
-            <h3>Physical</h3>
-            <p>By 18 July 2029, I will maintain <input data-target="phy-kg" type="text" style="width:80px" placeholder="_____"> kg, <input data-target="phy-bf" type="text" style="width:80px" placeholder="_____">% body fat approximately, exercise <input data-target="phy-days" type="text" style="width:80px" placeholder="_____"> days/week and maintain a sustainable diet.</p>
-            <h3>Business</h3>
-            <p>By 18 July 2029, VENUSCO will generate ₹ <input data-target="biz-rev" type="text" style="width:140px" placeholder="_____"> monthly revenue with ₹ <input data-target="biz-profit" type="text" style="width:140px" placeholder="_____"> monthly net profit, supported by documented systems and repeatable acquisition.</p>
-          </div>
-        </section>
-
-        <hr class="rule">
-
-        <section id="levels">
-          <p class="kicker">12 — The most important rule</p>
-          <h2 class="section-title">Three levels of the plan</h2>
-          <div class="levels">
-            <div class="level"><div class="n">LEVEL 1 — VISION</div><h3>Who am I becoming?</h3></div>
-            <div class="level"><div class="n">LEVEL 2 — TARGETS</div><h3>What measurable results must exist by 30?</h3></div>
-            <div class="level"><div class="n">LEVEL 3 — SYSTEMS</div><h3>What must I repeatedly do every day / week / month?</h3></div>
-          </div>
-          <p class="notice">Most people stop at Level 1. This OS operates at Level 3.</p>
-        </section>
-
-        <hr class="rule">
-
-        <section id="equation">
-          <p class="kicker">13 — Life equation</p>
-          <h2 class="section-title">The loop that survives motivation</h2>
-          <div class="panel">
-            <p class="equation">VISION → TARGET → PLAN → SYSTEM → EXECUTION → MEASUREMENT → REVIEW → CORRECTION → REPEAT</p>
-            <p class="notice">Not: Motivation → Action → Failure → Restart. The system must work when motivation disappears.</p>
-            <div class="btn-row">
-              <button class="btn solid" type="button" id="export-diary">Export diary JSON</button>
-              <label class="btn ghost" for="import-diary">Import JSON<input id="import-diary" type="file" accept="application/json,.json" hidden></label>
-              <span class="notice">Your diary is stored in this browser only. Export a backup before switching devices or clearing browser data.</span>
-              <p class="app-status" id="transfer-status" role="status" aria-live="polite"></p>
-            </div>
-          </div>
-        </section>
-
-        <hr class="rule">
-
-        <section id="targets">
-          <p class="kicker">14 — Next step: Age-30 target sheet</p>
-          <h2 class="section-title">Raw answers first</h2>
-          <p class="lede">Do not invent polished 2029 targets yet. Dump messy, incomplete, even unrealistic answers. Then reverse-engineer the remaining days into execution. For each pillar the formal sheet will become: CURRENT STATE → 30-YEAR-OLD STATE → NUMERIC TARGET → WHY → 3-YEAR PLAN → 1-YEAR TARGET → 90-DAY TARGET → MONTHLY SYSTEM → WEEKLY SYSTEM → DAILY HABITS.</p>
-          <div class="panel">
-            <label class="field">1. Mental &amp; Intelligence — What do I want my mind / knowledge / skills to look like at 30?
-              <textarea data-answer="mental" placeholder="Raw answer…"></textarea>
-            </label>
-            <label class="field" style="margin-top:14px">2. Physical — What body, fitness, strength and health condition do I want at 30?
-              <textarea data-answer="physical" placeholder="Raw answer…"></textarea>
-            </label>
-            <label class="field" style="margin-top:14px">3. Islamic &amp; Spiritual — What kind of Muslim / man of faith do I want to be at 30?
-              <textarea data-answer="spiritual" placeholder="Raw answer…"></textarea>
-            </label>
-            <label class="field" style="margin-top:14px">4. Financial — How much monthly income, savings, assets and debt position do I want at 30?
-              <textarea data-answer="financial" placeholder="Raw answer…"></textarea>
-            </label>
-            <label class="field" style="margin-top:14px">5. Personal Development — What skills, confidence, communication and knowledge do I want?
-              <textarea data-answer="personal" placeholder="Raw answer…"></textarea>
-            </label>
-            <label class="field" style="margin-top:14px">6. Character &amp; Discipline — What qualities must people be able to describe me with at 30?
-              <textarea data-answer="character" placeholder="Raw answer…"></textarea>
-            </label>
-            <label class="field" style="margin-top:14px">7. Business &amp; Professional — What do I want VENUSCO, Harcheez and my professional career to look like?
-              <textarea data-answer="business" placeholder="Raw answer…"></textarea>
-            </label>
-            <p class="notice">Answers auto-save. Export JSON from the Life Equation section to keep a backup.</p>
-          </div>
-        </section> -->
-
-      </main>
-    </div>
-  </div>
-  <script src="assets/js/lifeos-home.js"></script>
+        <p class="hero-private">Your diary and planning pages require sign-in. This overview contains no personal records.</p>
+      </div>
+      <aside class="hero-note" aria-label="The Vision 30 approach">
+        <span class="note-index">A SIMPLE OPERATING RHYTHM</span>
+        <p>“Build the person first.<br>Build the life with intention.”</p>
+        <div class="note-rule"></div>
+        <span class="note-caption">Plan · Practice · Reflect · Adjust</span>
+      </aside>
+    </section>
+
+    <section class="public-section system-section" id="system" aria-labelledby="system-title">
+      <div class="section-heading">
+        <p class="public-eyebrow">One connected system</p>
+        <h2 id="system-title">Make the next step easier to see.</h2>
+        <p>Each part has a clear job. Keep the plan useful, the daily actions realistic, and the reviews honest.</p>
+      </div>
+      <div class="system-grid">
+        <a class="system-card" href="{% url 'vision' %}">
+          <span class="system-number">01 / DIRECTION</span>
+          <h3>See the horizon</h3>
+          <p>Keep the larger vision, life timeline, and long-range priorities in view.</p>
+          <span class="card-link">Explore Vision 30 <span aria-hidden="true">↗</span></span>
+        </a>
+        <a class="system-card" href="{% url 'blocks' %}">
+          <span class="system-number">02 / PLAN</span>
+          <h3>Break it into stages</h3>
+          <p>Turn a broad intention into blocks, missions, goals, and specific next actions.</p>
+          <span class="card-link">Open the plan <span aria-hidden="true">↗</span></span>
+        </a>
+        <a class="system-card" href="{% url 'today' %}">
+          <span class="system-number">03 / PRACTICE</span>
+          <h3>Work with today</h3>
+          <p>Choose priorities, manage tasks and habits, and record a brief daily check-in.</p>
+          <span class="card-link">Go to Today <span aria-hidden="true">↗</span></span>
+        </a>
+        <a class="system-card" href="{% url 'reviews' %}">
+          <span class="system-number">04 / REFLECT</span>
+          <h3>Learn and adjust</h3>
+          <p>Review consistency and outcomes separately; keep what helps and revise what does not.</p>
+          <span class="card-link">Browse reviews <span aria-hidden="true">↗</span></span>
+        </a>
+      </div>
+      <p class="public-hint">Workspace links ask you to sign in when you are not already authenticated.</p>
+      <div class="workspace-links">
+        <div>
+          <p class="public-eyebrow">MORE WORKSPACES</p>
+          <p>Go straight to a page when you know what you need.</p>
+        </div>
+        <nav aria-label="Life OS workspaces">
+          <a href="{% url 'dashboard' %}">Dashboard</a>
+          <a href="{% url 'goals_tasks' %}">Goals &amp; Tasks</a>
+          <a href="{% url 'tasks' %}">Tasks</a>
+          <a href="{% url 'habits' %}">Habits</a>
+          <a href="{% url 'life' %}">Life</a>
+          <a href="{% url 'journal' %}">Journal</a>
+          <a href="{% url 'progress' %}">Progress</a>
+          <a href="{% url 'archive' %}">Archive</a>
+          <a href="{% url 'settings' %}">Settings &amp; backups</a>
+        </nav>
+      </div>
+    </section>
+
+    <section class="public-section pillars-section" id="pillars" aria-labelledby="pillars-title">
+      <div class="pillars-intro">
+        <p class="public-eyebrow">Whole-life perspective</p>
+        <h2 id="pillars-title">Eight areas. One life.</h2>
+        <p>The framework makes room for different kinds of growth without reducing everything to one score. Use the areas that are relevant to your current season.</p>
+        <a class="text-link" href="{% url 'pillars' %}">See the pillar workspaces <span aria-hidden="true">→</span></a>
+      </div>
+      <ul class="pillar-list">
+        <li><span>01</span>Mental</li>
+        <li><span>02</span>Physical</li>
+        <li><span>03</span>Spiritual</li>
+        <li><span>04</span>Financial</li>
+        <li><span>05</span>Personal</li>
+        <li><span>06</span>Character</li>
+        <li><span>07</span>Business &amp; professional</li>
+        <li><span>08</span>Family</li>
+      </ul>
+    </section>
+
+    <section class="public-bottom-cta" aria-labelledby="start-title">
+      <div>
+        <p class="public-eyebrow">Start where you are</p>
+        <h2 id="start-title">A good system should help, not add pressure.</h2>
+        <p>Use the guide to learn each page and build a routine that fits your life.</p>
+      </div>
+      <div class="hero-actions">
+        <a class="public-button public-button-primary" href="{% url 'user_guide' %}">Read the guide <span aria-hidden="true">→</span></a>
+        <a class="public-button public-button-secondary" href="{% if user.is_authenticated %}{% url 'dashboard' %}{% else %}{% url 'login' %}{% endif %}">
+          {% if user.is_authenticated %}Open dashboard{% else %}Sign in{% endif %}
+        </a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="public-footer">
+    <a class="public-brand" href="{% url 'home' %}"><span class="public-brand-mark" aria-hidden="true">V30</span><span><strong>Vision 30</strong><small>Personal Life OS</small></span></a>
+    <p>Private workspace · Plan with intention. Review with honesty.</p>
+    <a href="{% url 'user_guide' %}">How to use this site</a>
+  </footer>
 </body>
 </html>

@@ -2,9 +2,10 @@
 
 Vision 30 is a private, single-user Django application for planning, executing,
 reviewing, and preserving a personal development journey. It uses Django's
-authentication, SQLite persistence, accessible server-rendered forms, and the
-existing Life OS visual design. The static HTML site is retained as a read-only
-legacy reference; the Django application is the primary dashboard.
+authentication, SQLite persistence locally, accessible server-rendered forms,
+and the existing Life OS visual design. The public home page and user guide
+introduce the system; the planning and diary workspaces require sign-in. The
+older standalone dashboard is retained only as a legacy data-export reference.
 
 ## Local setup
 
@@ -20,10 +21,13 @@ python manage.py createsuperuser
 python manage.py runserver
 ```
 
-Open <http://127.0.0.1:8000/> and sign in with the account created above. The
+Open <http://127.0.0.1:8000/> for the read-only home page and user guide. Open
+`/accounts/login/` to sign in, then use `/today/` for the daily workspace. The
 first setup creates the editable eight-pillar, ten-block, 80-stage framework;
 it does **not** create example tasks, goals, habits, check-ins, or progress.
 Use `/admin/` to manage detailed records and accounts.
+The short user guide is at `/user-guide/`; its detailed page-by-page manual is
+at `/user-guide/detailed-manual/`.
 The app defaults to a dark theme across the sign-in and Life OS pages; change
 the theme from **Settings** if you prefer the light palette.
 
@@ -76,16 +80,19 @@ practice check-ins only; no missing pillar history or outcome progress is
 inferred.
 
 **Export backup** downloads the complete framework and personal records as
-JSON. Keep backups in a private location. Django records persist in SQLite
-across browser reloads and sessions.
+JSON. Keep backups in a private location. Django records persist in the
+configured database across browser reloads and sessions. Local development
+uses SQLite by default; production uses the configured PostgreSQL database.
 
 ## Security and deployment
 
-The app requires a Django login. Create and manage users with `createsuperuser`
-or `/admin/`. For a private deployment, set a unique `DJANGO_SECRET_KEY`,
-`DJANGO_DEBUG=0`, and an explicit `DJANGO_ALLOWED_HOSTS`; serve over HTTPS and
-protect database and backup files. Do not expose Django's development server
-directly to the public internet.
+The diary, planning, and admin pages require Django authentication. There is no
+public registration page. Create the first account securely with
+`createsuperuser`; manage accounts with `/admin/`. For production, set a unique
+`SECRET_KEY` and `DEBUG=False`; Render's external hostname is added to
+`ALLOWED_HOSTS` automatically. Serve over HTTPS and protect database credentials
+and backup files. Do not expose Django's development server directly to the
+public internet.
 
 ## Production deployment (Render + Neon)
 

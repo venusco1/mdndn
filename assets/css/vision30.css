@@ -107,6 +107,18 @@
 .login-card h1 { margin: 0; font-family: var(--font-serif); font-size: 2.7rem; font-weight: 500; }
 .login-card form { margin-top: 20px; }
 
+.module-card { padding: 16px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); }
+.module-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.module-icon { font-size: 1.5rem; }
+.module-status { padding: 4px 10px; border-radius: 999px; font-size: .75rem; font-weight: 600; text-transform: uppercase; }
+.status-disabled { background: var(--surface-soft); color: var(--muted); }
+.status-empty { background: rgb(212 175 106 / 15%); color: var(--accent-strong); }
+.status-in_use { background: rgb(141 159 121 / 20%); color: #b9c9a7; }
+.module-card h4 { margin: 0 0 8px; font-family: var(--font-serif); font-size: 1.2rem; font-weight: 500; }
+.module-card p { margin: 0 0 14px; color: var(--muted); font-size: .9rem; line-height: 1.6; }
+.module-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.module-actions a, .module-actions button { min-height: 36px; padding: 6px 12px; font-size: .85rem; }
+
 @media (max-width: 900px) {
   .nav a { min-height: 38px; }
 }

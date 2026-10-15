@@ -1,0 +1,18 @@
+{% extends "lifeos/base.html" %}
+{% block content %}
+<header class="section-header">
+  <div>
+    <p class="eyebrow">Step 1 of 3</p>
+    <h2>Your Vision</h2>
+  </div>
+</header>
+<article class="card section-gap">
+  <h3>Define your long-term vision</h3>
+  <p>Set your vision name, duration (up to 5 years), and timezone. This will be the foundation for your blocks and pillars.</p>
+  <form method="post" action="{% url 'onboarding_vision' %}">
+    {% csrf_token %}
+    {{ vision_form.as_p }}
+    <button class="primary-btn" type="submit">Continue to Blocks →</button>
+  </form>
+</article>
+{% endblock %}

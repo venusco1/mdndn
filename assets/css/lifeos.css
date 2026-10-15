@@ -945,11 +945,12 @@ hr.rule { border: 0; border-top: 1px solid var(--rule); margin: 48px 0; }
   position: fixed;
   top: 8px;
   left: 8px;
-  z-index: 100;
+  z-index: 9999;
   padding: 10px 14px;
   color: var(--ink);
   background: var(--brass-2);
-  transform: translateY(-150%);
+  transform: translateY(-200%);
+  transition: transform 0.1s ease;
 }
 
 .skip-link:focus { transform: translateY(0); }

@@ -25,6 +25,10 @@ from .forms import (
     LegacyImportForm,
     MilestoneForm,
     MissionForm,
+    OnboardingBlockForm,
+    OnboardingPillarForm,
+    OnboardingStageForm,
+    OnboardingVisionForm,
     PillarDailyLogForm,
     ReviewForm,
     StageForm,
@@ -33,6 +37,7 @@ from .forms import (
     TaskForm,
     VisionConfigForm,
 )
+from .module_registry import get_all_modules, get_enabled_modules, get_module_info, get_module_status
 from .models import (
     Block,
     BlockPillarMission,
@@ -52,26 +57,30 @@ from .models import (
     Stage,
     StageReview,
     Task,
+    UserModulePreference,
     VisionConfig,
 )
 
 
-NAVIGATION = [
+CORE_NAVIGATION = [
     ("today", "Today", "today"),
     ("dashboard", "Dashboard", "dashboard"),
-    ("vision", "Vision 30", "vision"),
-    ("blocks", "Blocks", "blocks"),
-    ("pillars", "Pillars", "pillars"),
-    ("goals_tasks", "Goals & Tasks", "goals_tasks"),
-    ("tasks", "Tasks", "tasks"),
-    ("habits", "Habits", "habits"),
-    ("life", "Life", "life"),
-    ("reviews", "Reviews", "reviews"),
-    ("journal", "Journal", "journal"),
-    ("progress", "Progress", "progress"),
-    ("archive", "Archive", "archive"),
+    ("features", "Features", "features"),
     ("settings", "Settings", "settings"),
 ]
+
+MODULE_NAVIGATION_MAP = {
+    "vision": ("vision", "Vision 30", "vision"),
+    "blocks": ("blocks", "Blocks", "blocks"),
+    "pillars": ("pillars", "Pillars", "pillars"),
+    "goals": ("goals_tasks", "Goals & Targets", "goals_tasks"),
+    "tasks": ("tasks", "Tasks", "tasks"),
+    "habits": ("habits", "Habits", "habits"),
+    "reviews": ("reviews", "Reviews", "reviews"),
+    "journal": ("journal", "Journal", "journal"),
+    "progress": ("progress", "Progress", "progress"),
+    "archive": ("archive", "Archive", "archive"),
+}
 
 PILLAR_ALIASES = {
     "mental": "mental",
@@ -94,9 +103,16 @@ def _shell_context(request, page_title, **extra):
         active_block = next((block for block in blocks if block.status == Block.Status.ACTIVE), None)
     total_days = config.total_window_days()
     block_days = sum(block.duration_days for block in blocks)
+
+    enabled_modules = get_enabled_modules(request.user) if request.user.is_authenticated else []
+    navigation = list(CORE_NAVIGATION)
+    for module_key in enabled_modules:
+        if module_key in MODULE_NAVIGATION_MAP:
+            navigation.append(MODULE_NAVIGATION_MAP[module_key])
+
     context = {
         "page_title": page_title,
-        "navigation": NAVIGATION,
+        "navigation": navigation,
         "config": config,
         "today": today,
         "today_iso": today.isoformat(),
@@ -109,6 +125,7 @@ def _shell_context(request, page_title, **extra):
         "unallocated_days": max(0, total_days - block_days),
         "theme": config.theme,
         "days_until_start": max(0, (config.master_start - today).days),
+        "enabled_modules": enabled_modules,
     }
     context.update(extra)
     return context
@@ -139,22 +156,46 @@ def _daily_execution(date_value):
 
 @login_required
 def today(request):
+    from .module_registry import initialize_user_modules
+
+    initialize_user_modules(request.user)
+
     current_date = timezone.localdate()
-    logs = {entry.pillar_id: entry for entry in PillarDailyLog.objects.filter(date=current_date)}
-    tasks_due = list(Task.objects.filter(due_date=current_date).select_related("pillar"))
-    overdue_tasks = list(Task.objects.filter(due_date__lt=current_date).exclude(status=Task.Status.COMPLETED).select_related("pillar"))
-    habits = list(Habit.objects.filter(active=True).select_related("pillar"))
-    checked_habits = set(HabitCheckIn.objects.filter(date=current_date, habit__in=habits).values_list("habit_id", flat=True))
-    priorities = list(DailyPriority.objects.filter(date=current_date))
+    enabled_modules = get_enabled_modules(request.user)
+
+    logs = {}
+    tasks_due = []
+    overdue_tasks = []
+    habits = []
+    checked_habits = set()
+    priorities = []
+    daily_review = None
+    execution_score = None
+    activity_total = 0
+    active_missions = []
+
+    if "pillars" in enabled_modules:
+        logs = {entry.pillar_id: entry for entry in PillarDailyLog.objects.filter(date=current_date)}
+    if "tasks" in enabled_modules:
+        tasks_due = list(Task.objects.filter(due_date=current_date).select_related("pillar"))
+        overdue_tasks = list(Task.objects.filter(due_date__lt=current_date).exclude(status=Task.Status.COMPLETED).select_related("pillar"))
+    if "habits" in enabled_modules:
+        habits = list(Habit.objects.filter(active=True).select_related("pillar"))
+        checked_habits = set(HabitCheckIn.objects.filter(date=current_date, habit__in=habits).values_list("habit_id", flat=True))
+    if "tasks" in enabled_modules:
+        priorities = list(DailyPriority.objects.filter(date=current_date))
     daily_review = DailyReview.objects.filter(date=current_date).first()
     execution_score, activity_total = _daily_execution(current_date)
+    if "vision" in enabled_modules:
+        active_missions = list(BlockPillarMission.objects.filter(block__status=Block.Status.ACTIVE).select_related("pillar", "stage")[:8])
+
     return render(
         request,
         "lifeos/today.html",
         _shell_context(
             request,
             "Today",
-            pillars=Pillar.objects.filter(active=True),
+            pillars=Pillar.objects.filter(active=True) if "pillars" in enabled_modules else [],
             logs=logs,
             tasks_due=tasks_due,
             overdue_tasks=overdue_tasks,
@@ -166,28 +207,55 @@ def today(request):
             daily_review_form=DailyReviewForm(instance=daily_review),
             execution_score=round(execution_score) if execution_score is not None else None,
             daily_entry_count=activity_total,
-            active_missions=BlockPillarMission.objects.filter(block__status=Block.Status.ACTIVE).select_related("pillar", "stage")[:8],
+            active_missions=active_missions,
         ),
     )
 
 
 @login_required
 def dashboard(request):
+    from .module_registry import initialize_user_modules
+
+    initialize_user_modules(request.user)
+
     current_date = timezone.localdate()
-    open_tasks = Task.objects.exclude(status=Task.Status.COMPLETED).select_related("pillar")
-    targets = MeasurableTarget.objects.select_related("block", "pillar").all()
+    enabled_modules = get_enabled_modules(request.user)
+
+    open_tasks = []
+    targets = []
+    active_habits = []
+    open_goals = []
+    milestones = []
+    completed_blocks = []
+    pillars = []
+
+    if "tasks" in enabled_modules:
+        open_tasks = list(Task.objects.exclude(status=Task.Status.COMPLETED).select_related("pillar")[:8])
+    if "goals" in enabled_modules:
+        targets = list(MeasurableTarget.objects.select_related("block", "pillar").all())
+        open_goals = list(Goal.objects.filter(completed_at__isnull=True).select_related("pillar"))
+    if "habits" in enabled_modules:
+        active_habits = list(Habit.objects.filter(active=True))
+    if "vision" in enabled_modules:
+        milestones = list(Milestone.objects.filter(completed_at__isnull=True, due_date__gte=current_date).select_related("block", "pillar")[:8])
+        completed_blocks = list(Block.objects.filter(status__in=[Block.Status.COMPLETED, Block.Status.ARCHIVED]))
+    if "pillars" in enabled_modules:
+        pillars = list(Pillar.objects.all())
+
     return render(
         request,
         "lifeos/dashboard.html",
         _shell_context(
             request,
             "Dashboard",
-            open_tasks=open_tasks[:8],
-            active_habits=Habit.objects.filter(active=True),
-            open_goals=Goal.objects.filter(completed_at__isnull=True).select_related("pillar"),
+            open_tasks=open_tasks,
+            active_habits=active_habits,
+            open_goals=open_goals,
             current_targets=targets,
-            milestones=Milestone.objects.filter(completed_at__isnull=True, due_date__gte=current_date).select_related("block", "pillar")[:8],
-            completed_blocks=Block.objects.filter(status__in=[Block.Status.COMPLETED, Block.Status.ARCHIVED]),
+            milestones=milestones,
+            completed_blocks=completed_blocks,
+            enabled_modules=enabled_modules,
+            pillars=pillars,
         ),
     )
 
@@ -1254,3 +1322,139 @@ def import_backup(request):
     else:
         messages.success(request, f"Imported {imported} records. Existing records were kept.")
     return redirect("settings")
+
+
+@login_required
+def onboarding_vision(request):
+    config = VisionConfig.get_solo()
+    form = OnboardingVisionForm(request.POST or None, instance=config)
+    if request.method == "POST" and form.is_valid():
+        form.save()
+        config.first_block_start = form.cleaned_data.get("master_start", config.master_start)
+        config.save(update_fields=["first_block_start"])
+        return redirect("onboarding_blocks")
+    return render(request, "lifeos/onboarding_vision.html", _shell_context(request, "Step 1: Your Vision", vision_form=form))
+
+
+@login_required
+def onboarding_blocks(request):
+    blocks = Block.objects.all()
+    if request.method == "POST":
+        block_count = int(request.POST.get("block_count", 3))
+        return render(request, "lifeos/onboarding_blocks_form.html", _shell_context(request, "Step 2: Your Blocks", block_count=block_count, blocks=blocks))
+    return render(request, "lifeos/onboarding_blocks.html", _shell_context(request, "Step 2: Your Blocks", blocks=blocks))
+
+
+@login_required
+@require_POST
+def onboarding_save_blocks(request):
+    block_count = int(request.POST.get("block_count", 0))
+    Block.objects.all().delete()
+    for i in range(1, block_count + 1):
+        name = request.POST.get(f"block_{i}_name", f"Block {i}")
+        start_date = request.POST.get(f"block_{i}_start_date")
+        deadline = request.POST.get(f"block_{i}_deadline")
+        if start_date and deadline:
+            Block.objects.create(number=i, name=name, start_date=date.fromisoformat(start_date), deadline=date.fromisoformat(deadline))
+    messages.success(request, f"Created {block_count} blocks.")
+    return redirect("onboarding_pillars")
+
+
+@login_required
+def onboarding_pillars(request):
+    pillars = Pillar.objects.prefetch_related("stages").all()
+    if request.method == "POST":
+        pillar_count = int(request.POST.get("pillar_count", 1))
+        return render(
+            request,
+            "lifeos/onboarding_pillars_form.html",
+            _shell_context(request, "Step 3: Your Pillars", pillar_count=pillar_count, pillars=pillars),
+        )
+    return render(request, "lifeos/onboarding_pillars.html", _shell_context(request, "Step 3: Your Pillars", pillars=pillars))
+
+
+@login_required
+@require_POST
+def onboarding_save_pillars(request):
+    pillar_count = int(request.POST.get("pillar_count", 0))
+    Pillar.objects.all().delete()
+    for i in range(1, pillar_count + 1):
+        name = request.POST.get(f"pillar_{i}_name", f"Pillar {i}")
+        slug = request.POST.get(f"pillar_{i}_slug", name.lower().replace(" ", "-"))
+        description = request.POST.get(f"pillar_{i}_description", "")
+        pillar = Pillar.objects.create(name=name, slug=slug, order=i, description=description)
+        Stage.objects.create(pillar=pillar, number=1, title="Stage 1", vision="", mission="")
+    messages.success(request, f"Created {pillar_count} pillars. You can add more stages later from the pillar detail page.")
+    return redirect("onboarding_complete")
+
+
+@login_required
+def onboarding_complete(request):
+    config = VisionConfig.get_solo()
+    blocks = Block.objects.all()
+    pillars = Pillar.objects.prefetch_related("stages").all()
+    return render(request, "lifeos/onboarding_complete.html", _shell_context(request, "Setup Complete", config=config, blocks=blocks, pillars=pillars))
+
+
+@login_required
+def features_page(request):
+    from .module_registry import initialize_user_modules, get_module_data_count
+
+    initialize_user_modules(request.user)
+
+    all_modules = get_all_modules()
+    enabled_modules = get_enabled_modules(request.user)
+
+    modules_with_status = []
+    for module_key, module_info in all_modules.items():
+        status = get_module_status(request.user, module_key)
+        data_count = get_module_data_count(request.user, module_key)
+        modules_with_status.append(
+            {
+                "key": module_key,
+                "name": module_info["name"],
+                "description": module_info["description"],
+                "icon": module_info["icon"],
+                "url_name": module_info["url_name"],
+                "dependencies": module_info["dependencies"],
+                "setup_url": module_info.get("setup_url"),
+                "is_enabled": module_key in enabled_modules,
+                "status": status,
+                "data_count": data_count,
+            }
+        )
+
+    return render(request, "lifeos/features.html", _shell_context(request, "Features", modules=modules_with_status))
+
+
+@login_required
+def enable_module_view(request, module_key):
+    from .module_registry import enable_module, get_module_info, is_module_enabled
+
+    module_info = get_module_info(module_key)
+    if not module_info:
+        messages.error(request, "Unknown module.")
+        return redirect("features")
+
+    for dep in module_info["dependencies"]:
+        if not is_module_enabled(request.user, dep):
+            messages.warning(request, f"Please enable {dep} first.")
+            return redirect("features")
+
+    enable_module(request.user, module_key)
+    messages.success(request, f"{module_info['name']} has been enabled.")
+    return redirect("features")
+
+
+@login_required
+def disable_module_view(request, module_key):
+    from .module_registry import disable_module, get_module_info
+
+    module_info = get_module_info(module_key)
+    if not module_info:
+        messages.error(request, "Unknown module.")
+        return redirect("features")
+
+    disable_module(request.user, module_key)
+    messages.success(request, f"{module_info['name']} has been disabled. Your data is preserved.")
+    return redirect("features")

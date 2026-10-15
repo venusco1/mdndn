@@ -13,6 +13,7 @@ from .models import (
     JournalEntry,
     MeasurableTarget,
     Milestone,
+    Pillar,
     PillarDailyLog,
     Review,
     Stage,
@@ -219,3 +220,61 @@ class LegacyImportForm(forms.Form):
         if not backup.name.lower().endswith(".json"):
             raise ValidationError("Choose a JSON backup file.")
         return backup
+
+
+class OnboardingVisionForm(StyledModelForm):
+    class Meta:
+        model = VisionConfig
+        fields = ("name", "master_start", "master_deadline", "master_vision", "timezone_name", "theme")
+        widgets = {
+            "master_start": forms.DateInput(attrs={"type": "date"}),
+            "master_deadline": forms.DateInput(attrs={"type": "date"}),
+        }
+
+    def clean(self):
+        cleaned = super().clean()
+        master_start = cleaned.get("master_start")
+        master_deadline = cleaned.get("master_deadline")
+
+        if master_deadline and master_start:
+            duration_years = (master_deadline - master_start).days / 365.25
+            if duration_years > 5:
+                self.add_error("master_deadline", "Vision duration cannot exceed 5 years.")
+            if master_deadline < master_start:
+                self.add_error("master_deadline", "The master deadline must be on or after the master start.")
+        if cleaned.get("timezone_name"):
+            try:
+                ZoneInfo(cleaned["timezone_name"])
+            except (ZoneInfoNotFoundError, ValueError):
+                self.add_error("timezone_name", "Enter a valid IANA timezone, such as Asia/Kolkata.")
+        return cleaned
+
+
+class OnboardingBlockForm(StyledModelForm):
+    class Meta:
+        model = Block
+        fields = ("number", "name", "start_date", "deadline")
+        widgets = {
+            "start_date": forms.DateInput(attrs={"type": "date"}),
+            "deadline": forms.DateInput(attrs={"type": "date"}),
+        }
+
+    def clean(self):
+        cleaned = super().clean()
+        start_date = cleaned.get("start_date")
+        deadline = cleaned.get("deadline")
+        if start_date and deadline and deadline < start_date:
+            self.add_error("deadline", "The block deadline must be on or after the block start date.")
+        return cleaned
+
+
+class OnboardingPillarForm(StyledModelForm):
+    class Meta:
+        model = Pillar
+        fields = ("name", "slug", "order", "description")
+
+
+class OnboardingStageForm(StyledModelForm):
+    class Meta:
+        model = Stage
+        fields = ("number", "title", "vision", "mission")

@@ -46,4 +46,13 @@ urlpatterns = [
     path("milestones/create/", views.create_milestone, name="create_milestone"),
     path("milestones/<int:pk>/toggle/", views.toggle_milestone, name="toggle_milestone"),
     path("records/<str:kind>/<int:pk>/delete/", views.delete_record, name="delete_record"),
+    path("onboarding/vision/", views.onboarding_vision, name="onboarding_vision"),
+    path("onboarding/blocks/", views.onboarding_blocks, name="onboarding_blocks"),
+    path("onboarding/blocks/save/", views.onboarding_save_blocks, name="onboarding_save_blocks"),
+    path("onboarding/pillars/", views.onboarding_pillars, name="onboarding_pillars"),
+    path("onboarding/pillars/save/", views.onboarding_save_pillars, name="onboarding_save_pillars"),
+    path("onboarding/complete/", views.onboarding_complete, name="onboarding_complete"),
+    path("features/", views.features_page, name="features"),
+    path("features/<str:module_key>/enable/", views.enable_module_view, name="enable_module"),
+    path("features/<str:module_key>/disable/", views.disable_module_view, name="disable_module"),
 ]

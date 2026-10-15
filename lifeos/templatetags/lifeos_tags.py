@@ -8,3 +8,8 @@ def get_item(mapping, key):
     if hasattr(mapping, "get"):
         return mapping.get(key)
     return None
+
+
+@register.filter
+def make_range(value):
+    return range(value)

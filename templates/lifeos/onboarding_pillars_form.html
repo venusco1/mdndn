@@ -1,0 +1,31 @@
+{% extends "lifeos/base.html" %}
+{% load lifeos_tags %}
+{% block content %}
+<header class="section-header">
+  <div>
+    <p class="eyebrow">Step 3 of 3</p>
+    <h2>Configure Your Pillars</h2>
+  </div>
+</header>
+<article class="card section-gap">
+  <h3>Set up {{ pillar_count }} pillars</h3>
+  <p>Define each pillar with its name, slug (URL-friendly identifier), and description. Each pillar will start with one stage, and you can add more stages later from the pillar detail page.</p>
+  <form method="post" action="{% url 'onboarding_save_pillars' %}">
+    {% csrf_token %}
+    <input type="hidden" name="pillar_count" value="{{ pillar_count }}">
+    {% for i in pillar_count|make_range:1 %}
+    <div class="pillar-config section-gap">
+      <h4>Pillar {{ i }}</h4>
+      <label for="pillar_{{ i }}_name">Name:</label>
+      <input type="text" name="pillar_{{ i }}_name" id="pillar_{{ i }}_name" class="form-control" value="Pillar {{ i }}" required>
+      <label for="pillar_{{ i }}_slug">Slug (URL-friendly):</label>
+      <input type="text" name="pillar_{{ i }}_slug" id="pillar_{{ i }}_slug" class="form-control" value="pillar-{{ i }}" required>
+      <label for="pillar_{{ i }}_description">Description:</label>
+      <textarea name="pillar_{{ i }}_description" id="pillar_{{ i }}_description" class="form-control" rows="2"></textarea>
+    </div>
+    {% endfor %}
+    <button class="primary-btn" type="submit">Complete Setup →</button>
+    <a class="action-btn" href="{% url 'onboarding_pillars' %}">← Back</a>
+  </form>
+</article>
+{% endblock %}

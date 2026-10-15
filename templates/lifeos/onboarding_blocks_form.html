@@ -1,0 +1,31 @@
+{% extends "lifeos/base.html" %}
+{% load lifeos_tags %}
+{% block content %}
+<header class="section-header">
+  <div>
+    <p class="eyebrow">Step 2 of 3</p>
+    <h2>Configure Your Blocks</h2>
+  </div>
+</header>
+<article class="card section-gap">
+  <h3>Set up {{ block_count }} blocks</h3>
+  <p>Define the name, start date, and deadline for each block. Blocks should be sequential and fit within your vision timeline.</p>
+  <form method="post" action="{% url 'onboarding_save_blocks' %}">
+    {% csrf_token %}
+    <input type="hidden" name="block_count" value="{{ block_count }}">
+    {% for i in block_count|make_range:1 %}
+    <div class="block-config section-gap">
+      <h4>Block {{ i }}</h4>
+      <label for="block_{{ i }}_name">Name:</label>
+      <input type="text" name="block_{{ i }}_name" id="block_{{ i }}_name" class="form-control" value="Block {{ i }}" required>
+      <label for="block_{{ i }}_start_date">Start date:</label>
+      <input type="date" name="block_{{ i }}_start_date" id="block_{{ i }}_start_date" class="form-control" required>
+      <label for="block_{{ i }}_deadline">Deadline:</label>
+      <input type="date" name="block_{{ i }}_deadline" id="block_{{ i }}_deadline" class="form-control" required>
+    </div>
+    {% endfor %}
+    <button class="primary-btn" type="submit">Save & Continue to Pillars →</button>
+    <a class="action-btn" href="{% url 'onboarding_blocks' %}">← Back</a>
+  </form>
+</article>
+{% endblock %}

@@ -169,13 +169,13 @@
   border: 1px solid var(--public-border);
   border-radius: 11px;
   background: linear-gradient(160deg, rgb(230 199 128 / 5%), transparent 55%), var(--public-surface);
-  text-decoration: none;
   transition: border-color 160ms ease, transform 160ms ease, background-color 160ms ease;
 }
 .system-card:hover { transform: translateY(-3px); border-color: rgb(230 199 128 / 50%); background-color: var(--public-surface-raised); }
+.system-card a { text-decoration: none; }
 .system-number { color: #a9956d; font-size: .59rem; }
 .system-card h3, .guide-card h3, .guide-panel h3, .guide-timeline h3 { margin: 18px 0 8px; font-family: var(--font-serif); font-size: 1.55rem; font-weight: 500; }
-.system-card p { margin: 0 0 20px; color: var(--public-muted); font-size: .87rem; line-height: 1.65; }
+.system-card p { margin: 0; color: var(--public-muted); font-size: .87rem; line-height: 1.65; }
 .card-link { display: flex; justify-content: space-between; width: 100%; margin-top: auto; color: var(--public-gold); font-size: .79rem; font-weight: 600; }
 .public-hint { margin-top: 12px; }
 .workspace-links {

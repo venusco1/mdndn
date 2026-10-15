@@ -1,0 +1,43 @@
+{% extends "lifeos/base.html" %}
+{% block content %}
+<header class="section-header">
+  <div>
+    <p class="eyebrow">Step 2 of 3</p>
+    <h2>Your Blocks</h2>
+  </div>
+</header>
+<article class="card section-gap">
+  <h3>How many blocks do you want?</h3>
+  <p>Blocks are time periods within your vision. You can create as many blocks as you need (10, 20, or more). Each block will have its own focus and milestones.</p>
+  <form method="post" action="{% url 'onboarding_blocks' %}">
+    {% csrf_token %}
+    <label for="block_count">Number of blocks:</label>
+    <select name="block_count" id="block_count" class="form-control">
+      <option value="1">1 block</option>
+      <option value="2">2 blocks</option>
+      <option value="3" selected>3 blocks</option>
+      <option value="4">4 blocks</option>
+      <option value="5">5 blocks</option>
+      <option value="6">6 blocks</option>
+      <option value="7">7 blocks</option>
+      <option value="8">8 blocks</option>
+      <option value="9">9 blocks</option>
+      <option value="10">10 blocks</option>
+      <option value="12">12 blocks</option>
+      <option value="15">15 blocks</option>
+      <option value="20">20 blocks</option>
+    </select>
+    <button class="primary-btn" type="submit">Configure Blocks →</button>
+  </form>
+  {% if blocks %}
+  <div class="section-gap">
+    <h4>Current blocks:</h4>
+    <ul>
+      {% for block in blocks %}
+      <li>Block {{ block.number }}: {{ block.name }} ({{ block.start_date }} to {{ block.deadline }})</li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+</article>
+{% endblock %}

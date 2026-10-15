@@ -3,10 +3,22 @@
 {% block content %}
 <header class="section-header">
   <div><p class="eyebrow">Daily command center</p><h2>Today</h2></div>
-  {% if day_number %}<span class="badge">Vision day {{ day_number }} · {{ days_remaining }} days remaining</span>{% else %}
-    {% if today < config.master_start %}<span class="badge">Journey begins in {{ days_until_start }} days</span>{% else %}<span class="badge">Vision 30 timeline ended</span>{% endif %}
+  {% if 'vision' in enabled_modules %}
+    {% if day_number %}<span class="badge">Vision day {{ day_number }} · {{ days_remaining }} days remaining</span>{% else %}
+      {% if today < config.master_start %}<span class="badge">Journey begins in {{ days_until_start }} days</span>{% else %}<span class="badge">Vision 30 timeline ended</span>{% endif %}
+    {% endif %}
   {% endif %}
 </header>
+
+{% if enabled_modules|length == 0 %}
+<article class="card section-gap">
+  <h3>Welcome to your Life OS</h3>
+  <p>Your daily command center is ready. Enable features to start tracking your progress.</p>
+  <a class="primary-btn" href="{% url 'features' %}">Explore Features</a>
+</article>
+{% else %}
+
+{% if 'vision' in enabled_modules %}
 <div class="grid grid-4">
   <article class="card metric"><span class="label">Vision 30 day</span><strong>{% if day_number %}{{ day_number }}{% else %}—{% endif %}</strong><span class="small muted">of {{ timeline.total_days }} inclusive calendar days</span></article>
   <article class="card metric"><span class="label">Days remaining</span><strong>{{ days_remaining }}</strong><span class="small muted">to {{ config.master_deadline }}</span></article>
@@ -14,6 +26,7 @@
   <article class="card metric"><span class="label">Execution consistency</span><strong>{% if execution_score != None %}{{ execution_score }}%{% else %}—{% endif %}</strong><span class="small muted">{% if execution_score != None %}{{ daily_entry_count }} planned/logged items{% else %}Log today's planned work first{% endif %}</span></article>
 </div>
 {% if active_block %}<p class="timeline-note">Block {{ active_block.number|stringformat:"02d" }} · Day {% if block_day %}{{ block_day }}{% else %}starts {{ active_block.start_date }}{% endif %} of {{ active_block.duration_days }} · Deadline {{ active_block.deadline }} · <a href="{% url 'block_detail' active_block.pk %}">Open block workspace</a></p>{% endif %}
+{% endif %}
 
 <div class="grid grid-2 section-gap">
   <article class="card">
@@ -30,6 +43,7 @@
       </form>
     {% empty %}<p class="empty-state">Choose up to three meaningful priorities. No sample priorities are prefilled.</p>{% endfor %}
   </article>
+  {% if 'tasks' in enabled_modules %}
   <article class="card">
     <div class="section-header"><div><p class="eyebrow">Execution</p><h3>Tasks due today</h3></div><a href="{% url 'tasks' %}">All tasks</a></div>
     {% for task in tasks_due %}
@@ -42,8 +56,10 @@
     {% empty %}<p class="empty-state">No tasks due today. Add a next action when you're ready.</p>{% endfor %}
     {% if overdue_tasks %}<h4 class="subheading">Overdue · review and reschedule</h4>{% for task in overdue_tasks %}<div class="list-row"><span>{{ task.title }}</span><span class="tag high">{{ task.due_date }}</span></div>{% endfor %}{% endif %}
   </article>
+  {% endif %}
 </div>
 
+{% if 'pillars' in enabled_modules %}
 <article class="card section-gap">
   <div class="section-header"><div><p class="eyebrow">Three to five minute check-in</p><h3>Eight-pillar daily check-in</h3></div><a href="{% url 'pillars' %}">Pillar stages</a></div>
   <div class="pillars">
@@ -66,8 +82,10 @@
   {% endfor %}
   </div>
 </article>
+{% endif %}
 
 <div class="grid grid-2 section-gap">
+  {% if 'habits' in enabled_modules %}
   <article class="card">
     <div class="section-header"><div><p class="eyebrow">Daily practices</p><h3>Habits</h3></div><a href="{% url 'habits' %}">Manage habits</a></div>
     {% for habit in habits %}
@@ -77,6 +95,7 @@
       </form>
     {% empty %}<p class="empty-state">Create habits that support your current block. No sample habits are added.</p>{% endfor %}
   </article>
+  {% endif %}
   <article class="card" id="evening-reflection">
     <div class="section-header"><div><p class="eyebrow">Close the day</p><h3>Evening reflection</h3></div></div>
     <form method="post" action="{% url 'save_daily_review' %}">{% csrf_token %}
@@ -88,5 +107,6 @@
     <p class="small muted">Execution consistency reflects completed planned actions. Meaningful outcome evidence is tracked separately.</p>
   </article>
 </div>
-{% if active_missions %}<article class="card section-gap"><div class="section-header"><h3>Current block missions</h3><a href="{% url 'block_detail' active_missions.0.block_id %}">Open all eight</a></div><div class="grid grid-2">{% for mission in active_missions %}<div class="mission-summary"><strong>{{ mission.pillar.name }}</strong><p>{{ mission.mission|default:"Mission not written yet." }}</p><a href="{% url 'pillar_detail' mission.pillar_id %}">Stage {{ mission.stage.number|stringformat:"02d" }}</a></div>{% endfor %}</div></article>{% endif %}
+{% if 'vision' in enabled_modules and active_missions %}<article class="card section-gap"><div class="section-header"><h3>Current block missions</h3><a href="{% url 'block_detail' active_missions.0.block_id %}">Open all eight</a></div><div class="grid grid-2">{% for mission in active_missions %}<div class="mission-summary"><strong>{{ mission.pillar.name }}</strong><p>{{ mission.mission|default:"Mission not written yet." }}</p><a href="{% url 'pillar_detail' mission.pillar_id %}">Stage {{ mission.stage.number|stringformat:"02d" }}</a></div>{% endfor %}</div></article>{% endif %}
+{% endif %}
 {% endblock %}

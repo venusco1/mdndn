@@ -1,0 +1,52 @@
+{% extends "lifeos/base.html" %}
+{% block content %}
+<header class="section-header">
+  <div>
+    <p class="eyebrow">Customize your Life OS</p>
+    <h2>Features & Modules</h2>
+  </div>
+</header>
+<article class="card section-gap">
+  <h3>Build your personal productivity system</h3>
+  <p>Enable the modules you need and disable the ones you don't. Your data is always preserved when you disable a module.</p>
+  <div class="grid grid-3">
+    {% for module in modules %}
+    <div class="card module-card">
+      <div class="module-header">
+        <span class="module-icon">{{ module.icon }}</span>
+        <span class="module-status status-{{ module.status }}">{{ module.status|title }}</span>
+      </div>
+      <h4>{{ module.name }}</h4>
+      <p>{{ module.description }}</p>
+      {% if module.dependencies %}
+      <p class="small text-muted">Requires: {% for dep in module.dependencies %}{{ dep }}{% if not forloop.last %}, {% endif %}{% endfor %}</p>
+      {% endif %}
+      <div class="module-actions">
+        {% if module.is_enabled %}
+          <a class="action-btn" href="{% url module.url_name %}">Open</a>
+          <a class="chip-btn" href="{% url 'disable_module' module.key %}">Disable</a>
+        {% else %}
+          {% if module.dependencies %}
+            {% for dep in module.dependencies %}
+              {% if dep in enabled_modules %}
+                <a class="primary-btn" href="{% url 'enable_module' module.key %}">Enable</a>
+              {% else %}
+                <button class="chip-btn" disabled>Enable {{ dep }} first</button>
+              {% endif %}
+            {% endfor %}
+          {% else %}
+            <a class="primary-btn" href="{% url 'enable_module' module.key %}">Enable</a>
+          {% endif %}
+        {% endif %}
+        {% if module.setup_url and module.status == 'empty' %}
+          <a class="chip-btn" href="{% url module.setup_url %}">Setup</a>
+        {% endif %}
+      </div>
+      {% if module.data_count > 0 %}
+      <p class="small text-muted">{{ module.data_count }} records</p>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+</article>
+{% endblock %}

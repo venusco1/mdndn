@@ -1,0 +1,257 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0f0d0a">
+  <title>User Guide · MDNDN</title>
+  <link rel="icon" href="{% static 'img/favicon.png' %}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=IBM+Plex+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/lifeos-app.css' %}">
+  <link rel="stylesheet" href="{% static 'css/public-pages.css' %}">
+</head>
+<body class="public-page">
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  <header class="public-header">
+    <a class="public-brand" href="{% url 'home' %}" aria-label="MDNDN home">
+      <span class="public-brand-mark" aria-hidden="true">MD</span>
+      <span><strong>MDNDN</strong><small>Personal Life OS</small></span>
+    </a>
+    <nav class="public-nav" aria-label="Main navigation">
+      <a href="{% url 'home' %}">Home</a>
+      <a class="public-nav-cta" href="{% if user.is_authenticated %}{% url 'today' %}{% else %}{% url 'login' %}{% endif %}">
+        {% if user.is_authenticated %}Open Dashboard{% else %}Sign in{% endif %}
+      </a>
+    </nav>
+  </header>
+
+  <main id="main-content" class="public-main">
+    <section class="guide-hero">
+      <p class="public-eyebrow">User Guide</p>
+      <h1>How to use MDNDN</h1>
+      <p class="guide-lede">A simple guide to setting up and using your personal Life OS.</p>
+    </section>
+
+    <section class="guide-section" id="getting-started">
+      <h2>Getting Started</h2>
+      <p>MDNDN is a modular personal productivity system. You can start with just the basics and add more features as you need them.</p>
+      
+      <div class="guide-callout">
+        <strong>What is MDNDN?</strong>
+        <p>MDNDN helps you plan your long-term vision, organize daily work, track habits, and review progress in one private workspace.</p>
+      </div>
+
+      <h3>Your first steps</h3>
+      <ol class="guide-steps">
+        <li><strong>Sign in</strong> to access your private workspace</li>
+        <li>Visit the <strong>Features</strong> page to see available modules</li>
+        <li><strong>Enable</strong> the modules you want to use</li>
+        <li>Start with <strong>Vision</strong> and <strong>Today</strong> for a simple setup</li>
+      </ol>
+
+      <h3>Key pages</h3>
+      <ul class="guide-list">
+        <li><strong>Today</strong> — Your daily command center for priorities, tasks, and habits</li>
+        <li><strong>Dashboard</strong> — Overview of your system and progress</li>
+        <li><strong>Features</strong> — Enable or disable modules</li>
+        <li><strong>Settings</strong> — App preferences and data management</li>
+      </ul>
+    </section>
+
+    <section class="guide-section" id="understanding">
+      <h2>Understanding the Life OS</h2>
+      <p>MDNDN uses a modular structure. Each component serves a specific purpose:</p>
+
+      <div class="guide-card-grid">
+        <div class="guide-card">
+          <span class="guide-card-number">01</span>
+          <h3>Vision</h3>
+          <p>Your long-term direction, timeline, and major goals. Optional but recommended for planning.</p>
+        </div>
+        <div class="guide-card">
+          <span class="guide-card-number">02</span>
+          <h3>Blocks</h3>
+          <p>Time periods that break your vision into manageable phases. Requires Vision to be enabled.</p>
+        </div>
+        <div class="guide-card">
+          <span class="guide-card-number">03</span>
+          <h3>Pillars</h3>
+          <p>Life areas like health, career, relationships. Optional — use only what matters to you.</p>
+        </div>
+        <div class="guide-card">
+          <span class="guide-card-number">04</span>
+          <h3>Goals & Targets</h3>
+          <p>Measurable outcomes with progress tracking. Independent module.</p>
+        </div>
+        <div class="guide-card">
+          <span class="guide-card-number">05</span>
+          <h3>Tasks</h3>
+          <p>Specific actionable work with due dates and priorities. Independent module.</p>
+        </div>
+        <div class="guide-card">
+          <span class="guide-card-number">06</span>
+          <h3>Habits</h3>
+          <p>Recurring behaviors with daily check-ins. Independent module.</p>
+        </div>
+        <div class="guide-card">
+          <span class="guide-card-number">07</span>
+          <h3>Reviews</h3>
+          <p>Weekly, monthly, and block evaluations. Optional for reflection.</p>
+        </div>
+        <div class="guide-card">
+          <span class="guide-card-number">08</span>
+          <h3>Journal</h3>
+          <p>Daily reflections and notes. Independent module.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="guide-section" id="vision30">
+      <h2>Setting Up Vision 30</h2>
+      <p>Vision 30 is the long-term planning framework. You can configure it progressively:</p>
+
+      <div class="guide-callout guide-callout-soft">
+        <strong>You don't need to configure everything at once.</strong>
+        <p>Start with a simple vision and add blocks, pillars, and goals as your needs evolve.</p>
+      </div>
+
+      <h3>Basic setup</h3>
+      <ol class="guide-steps">
+        <li>Enable the <strong>Vision</strong> module from Features</li>
+        <li>Set your <strong>vision name</strong> and <strong>timeline</strong> (up to 5 years)</li>
+        <li>Define your <strong>start date</strong> and <strong>deadline</strong></li>
+      </ol>
+
+      <h3>Adding blocks (optional)</h3>
+      <ol class="guide-steps">
+        <li>Enable the <strong>Blocks</strong> module</li>
+        <li>Choose how many blocks you want (10, 20, or more)</li>
+        <li>Configure each block's name, start date, and deadline</li>
+      </ol>
+
+      <h3>Adding pillars (optional)</h3>
+      <ol class="guide-steps">
+        <li>Enable the <strong>Pillars</strong> module</li>
+        <li>Choose how many pillars you want (1-12)</li>
+        <li>Configure each pillar's name and description</li>
+        <li>Each pillar starts with one stage — add more later from the pillar detail page</li>
+      </ol>
+    </section>
+
+    <section class="guide-section" id="daily-workflow">
+      <h2>Daily Workflow</h2>
+      <p>A simple daily routine helps you stay focused and make progress:</p>
+
+      <div class="guide-timeline">
+        <article>
+          <span>Morning</span>
+          <h3>Review Today</h3>
+          <p>Open the Today page. Check your priorities and tasks for the day.</p>
+        </article>
+        <article>
+          <span>Midday</span>
+          <h3>Execute</h3>
+          <p>Work on your priorities, complete tasks, and track habits.</p>
+        </article>
+        <article>
+          <span>Evening</span>
+          <h3>Reflect</h3>
+          <p>Complete the evening reflection. Note wins and improvements.</p>
+        </article>
+      </div>
+
+      <div class="guide-note">
+        <strong>Tip:</strong> Keep it simple. You don't need to use every feature every day. Focus on what matters most to you right now.
+      </div>
+    </section>
+
+    <section class="guide-section" id="managing-features">
+      <h2>Managing Features</h2>
+      <p>The Features page lets you control which modules are active in your workspace.</p>
+
+      <h3>Enabling a module</h3>
+      <ol class="guide-steps">
+        <li>Go to <strong>Features</strong> from the sidebar</li>
+        <li>Find the module you want to enable</li>
+        <li>Click <strong>Enable</strong></li>
+        <li>The module will appear in your navigation</li>
+      </ol>
+
+      <h3>Disabling a module</h3>
+      <ol class="guide-steps">
+        <li>Go to <strong>Features</strong></li>
+        <li>Find the enabled module</li>
+        <li>Click <strong>Disable</strong></li>
+        <li>The module will hide from navigation but <strong>your data is preserved</strong></li>
+      </ol>
+
+      <div class="guide-callout">
+        <strong>Important: Disabling does not delete data.</strong>
+        <p>Your records remain in the database. Re-enabling the module restores access to all your data.</p>
+      </div>
+
+      <h3>Module states</h3>
+      <ul class="guide-list">
+        <li><strong>Disabled</strong> — Module is hidden but data is preserved</li>
+        <li><strong>Empty</strong> — Module is enabled but has no records yet</li>
+        <li><strong>In Use</strong> — Module is enabled and contains data</li>
+      </ul>
+    </section>
+
+    <section class="guide-section" id="faq">
+      <h2>Frequently Asked Questions</h2>
+
+      <details class="guide-faq">
+        <summary>How do I get started?</summary>
+        <p>Sign in, go to Features, and enable Vision and Today. Set up your vision timeline, then start using the Today page for daily priorities.</p>
+      </details>
+
+      <details class="guide-faq">
+        <summary>Why is a module not visible in the sidebar?</summary>
+        <p>The module may be disabled. Go to Features and enable it. If it's enabled but still not visible, check that you have the required dependencies (e.g., Blocks requires Vision).</p>
+      </details>
+
+      <details class="guide-faq">
+        <summary>How do I add a new goal or task?</summary>
+        <p>Enable the Goals or Tasks module from Features. Then visit the respective page and use the create form to add your first item.</p>
+      </details>
+
+      <details class="guide-faq">
+        <summary>What happens when I disable a feature?</summary>
+        <p>The module hides from navigation and widgets, but all your data remains in the database. Re-enabling the module restores full access to your records.</p>
+      </details>
+
+      <details class="guide-faq">
+        <summary>How do I change my settings?</summary>
+        <p>Go to Settings from the sidebar. You can change vision dates, theme, timezone, and manage backups from there.</p>
+      </details>
+
+      <details class="guide-faq">
+        <summary>Is my data private?</summary>
+        <p>Yes. Your records stay in the app's database. Export regular backups for safety. The application is designed for personal, private use.</p>
+      </details>
+    </section>
+
+    <section class="guide-final">
+      <div>
+        <p class="public-eyebrow">Ready to begin?</p>
+        <h2>Start building your Life OS.</h2>
+        <p>Sign in to access your workspace and enable your first modules.</p>
+      </div>
+      <div class="hero-actions">
+        <a class="public-button public-button-primary" href="{% if user.is_authenticated %}{% url 'features' %}{% else %}{% url 'login' %}{% endif %}">
+          {% if user.is_authenticated %}Open Features{% else %}Sign in{% endif %}
+        </a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="public-footer">
+    <a class="public-brand" href="{% url 'home' %}"><span class="public-brand-mark" aria-hidden="true">MD</span><span><strong>MDNDN</strong><small>Personal Life OS</small></span></a>
+    <p>Private workspace · Your data stays on your device.</p>
+  </footer>
+</body>
+</html>

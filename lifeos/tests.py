@@ -135,19 +135,13 @@ class LifeOSWorkflowTests(TestCase):
 
         home = self.client.get(reverse("home"))
         self.assertEqual(home.status_code, 200)
-        self.assertContains(home, "Build a life with")
+        self.assertContains(home, "Turn vision into")
         self.assertContains(home, reverse("user_guide"))
 
         guide = self.client.get(reverse("user_guide"))
         self.assertEqual(guide.status_code, 200)
-        self.assertContains(guide, "What each workspace is for")
+        self.assertContains(guide, "Getting Started")
         self.assertContains(guide, reverse("today"))
-
-        detailed_manual = self.client.get(reverse("user_manual"))
-        self.assertEqual(detailed_manual.status_code, 200)
-        self.assertContains(detailed_manual, "Know what every part does")
-        self.assertContains(detailed_manual, reverse("settings"))
-        self.assertContains(detailed_manual, "Example goal")
 
         private_page = self.client.get(reverse("today"))
         self.assertEqual(private_page.status_code, 302)

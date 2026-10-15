@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.utils import timezone
@@ -8,7 +9,7 @@ class VisionConfig(models.Model):
         LIGHT = "light", "Light"
         DARK = "dark", "Dark"
 
-    name = models.CharField(max_length=100, default="Vision 30")
+    name = models.CharField(max_length=100, default="MDNDN")
     master_start = models.DateField(default="2026-10-06")
     master_deadline = models.DateField(default="2029-07-18")
     first_block_start = models.DateField(default="2026-10-15")
@@ -73,7 +74,7 @@ class Block(models.Model):
         COMPLETED = "completed", "Completed"
         ARCHIVED = "archived", "Archived"
 
-    number = models.PositiveSmallIntegerField(unique=True, validators=[MinValueValidator(1), MaxValueValidator(10)])
+    number = models.PositiveSmallIntegerField(unique=True, validators=[MinValueValidator(1)])
     name = models.CharField(max_length=120)
     start_date = models.DateField()
     deadline = models.DateField()
@@ -107,7 +108,7 @@ class Block(models.Model):
 
 class Stage(models.Model):
     pillar = models.ForeignKey(Pillar, on_delete=models.CASCADE, related_name="stages")
-    number = models.PositiveSmallIntegerField(validators=[MinValueValidator(1), MaxValueValidator(10)])
+    number = models.PositiveSmallIntegerField(validators=[MinValueValidator(1)])
     title = models.CharField(max_length=120)
     vision = models.TextField(blank=True)
     mission = models.TextField(blank=True)
@@ -416,6 +417,34 @@ class StageReview(models.Model):
 
     class Meta:
         ordering = ["-reviewed_at"]
+
+
+class UserModulePreference(models.Model):
+    class Module(models.TextChoices):
+        VISION = "vision", "Vision 30"
+        BLOCKS = "blocks", "Blocks"
+        PILLARS = "pillars", "Pillars"
+        GOALS = "goals", "Goals & Targets"
+        TASKS = "tasks", "Tasks"
+        HABITS = "habits", "Habits"
+        REVIEWS = "reviews", "Reviews"
+        JOURNAL = "journal", "Journal"
+        PROGRESS = "progress", "Progress & Analytics"
+        ARCHIVE = "archive", "Archive"
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="module_preferences")
+    module_key = models.CharField(max_length=20, choices=Module.choices)
+    is_enabled = models.BooleanField(default=False)
+    settings = models.JSONField(default=dict, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=["user", "module_key"], name="unique_user_module")]
+        ordering = ["module_key"]
+
+    def __str__(self):
+        return f"{self.user.username} · {self.get_module_key_display()} ({'enabled' if self.is_enabled else 'disabled'})"
 
 
 class ImportBatch(models.Model):

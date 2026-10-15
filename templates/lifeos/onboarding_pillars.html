@@ -1,0 +1,41 @@
+{% extends "lifeos/base.html" %}
+{% block content %}
+<header class="section-header">
+  <div>
+    <p class="eyebrow">Step 3 of 3</p>
+    <h2>Your Pillars</h2>
+  </div>
+</header>
+<article class="card section-gap">
+  <h3>How many pillars do you want?</h3>
+  <p>Pillars represent the key areas of your life (e.g., Health, Career, Relationships). You can add as many pillars as you need, and each pillar can have multiple stages.</p>
+  <form method="post" action="{% url 'onboarding_pillars' %}">
+    {% csrf_token %}
+    <label for="pillar_count">Number of pillars:</label>
+    <select name="pillar_count" id="pillar_count" class="form-control">
+      <option value="1">1 pillar</option>
+      <option value="2">2 pillars</option>
+      <option value="3">3 pillars</option>
+      <option value="4">4 pillars</option>
+      <option value="5">5 pillars</option>
+      <option value="6">6 pillars</option>
+      <option value="7">7 pillars</option>
+      <option value="8" selected>8 pillars</option>
+      <option value="9">9 pillars</option>
+      <option value="10">10 pillars</option>
+      <option value="12">12 pillars</option>
+    </select>
+    <button class="primary-btn" type="submit">Configure Pillars →</button>
+  </form>
+  {% if pillars %}
+  <div class="section-gap">
+    <h4>Current pillars:</h4>
+    <ul>
+      {% for pillar in pillars %}
+      <li>{{ pillar.name }} ({{ pillar.stages.count }} stages)</li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+</article>
+{% endblock %}

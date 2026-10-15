@@ -1,0 +1,41 @@
+{% extends "lifeos/base.html" %}
+{% block content %}
+<header class="section-header">
+  <div>
+    <p class="eyebrow">Setup Complete</p>
+    <h2>Your Vision is Ready</h2>
+  </div>
+</header>
+<article class="card section-gap">
+  <h3>Congratulations!</h3>
+  <p>You have successfully set up your Vision 30 framework. Here's a summary of what you created:</p>
+  <div class="section-gap">
+    <h4>Vision</h4>
+    <p><strong>{{ config.name }}</strong></p>
+    <p>{{ config.master_vision }}</p>
+    <p>Duration: {{ config.master_start }} to {{ config.master_deadline }}</p>
+  </div>
+  <div class="section-gap">
+    <h4>Blocks ({{ blocks.count }})</h4>
+    <ul>
+      {% for block in blocks %}
+      <li>Block {{ block.number }}: {{ block.name }} ({{ block.start_date }} to {{ block.deadline }})</li>
+      {% endfor %}
+    </ul>
+  </div>
+  <div class="section-gap">
+    <h4>Pillars ({{ pillars.count }})</h4>
+    <ul>
+      {% for pillar in pillars %}
+      <li>{{ pillar.name }} - {{ pillar.stages.count }} stages</li>
+      {% endfor %}
+    </ul>
+  </div>
+  <div class="section-gap">
+    <p>You can now start using the system. Begin by setting your daily priorities, tracking your progress, and working through your blocks and pillars.</p>
+    <a class="primary-btn" href="{% url 'today' %}">Go to Today →</a>
+    <a class="action-btn" href="{% url 'dashboard' %}">View Dashboard</a>
+    <a class="action-btn" href="{% url 'vision' %}">View Vision</a>
+  </div>
+</article>
+{% endblock %}
